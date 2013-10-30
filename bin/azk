@@ -1,6 +1,38 @@
 #!/bin/bash
 
-__FILE__="${0}"
-export AZK_PATH=`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} )\`/..; pwd`
+# TODO: Test azk is compiled (make?)
 
-echo $AZK_PATH
+__FILE__="${0}"
+export _AZK_PATH=`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} )\`/..; pwd`
+
+# Show azk version
+show_version () {
+  echo "Azk $(grep 'version:' $_AZK_PATH/mix.exs | awk '{print $2}' | tr -d \",)"
+}
+
+# Check azkagent is avable
+check_agent () {
+  if ! $(ping -t 1 -c 1 $AZK_AGENT_HOST 2>/dev/null 1>/dev/null); then
+    exit 68
+  fi
+}
+
+run_command () {
+  exit 0
+}
+
+azk_main () {
+  export AZK_AGENT_HOST="${AZK_AGENT_HOST:-azk-agent}"
+  case ${1} in
+    -v | --version)
+      show_version
+      ;;
+    *)
+      check_agent && run_command "${@}"
+  esac
+}
+
+# sourced or run
+if [ ! $# -ne 1 ]; then
+  azk_main "${@}"
+fi
