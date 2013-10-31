@@ -36,18 +36,19 @@ import_a () {
 export -f import_a
 
 # Tmp dir
-tmp_path=$_AZK_PATH/tmp
+tmp_path=$_AZK_PATH/tmp/test
 if [[ ! -d $tmp_path ]]; then
   mkdir -p $tmp_path
 fi
 
 # Pipe to comunication subshell
-pipe=$tmp_path/testpipe
-trap "rm -f $pipe" EXIT
+pipe="$tmp_path/$(date +%s)$RANDOM"
 if [[ ! -p $pipe ]]; then
   mkfifo $pipe
 fi
 
-. $(dirname $0)/shunit2
+oneTimeTearDown () {
+  rm -fr $tmp_path;
+}
 
-rm -f $pipe
+. $(dirname $0)/shunit2

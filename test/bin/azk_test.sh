@@ -1,8 +1,11 @@
 #!/bin/bash
 
-__FILE__="${0}"
-export _AZK_PATH=`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} )\`/../..; pwd`
-export PATH=$_AZK_PATH/bin:$PATH
+ __FILE__="${0}"
+_AZK_PATH=${_AZK_PATH:-`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} )\`/../..; pwd`}
+
+# Source azk
+. ${_AZK_PATH}/bin/azk
+export PATH=${_AZK_PATH}/bin:$PATH
 
 testAzkVersion() {
   test="azk \${PARAM} | grep -q 'Azk [0-9]\+\.[0-9]\+\.[0-9]\+'"
@@ -14,38 +17,49 @@ testAzkVersion() {
 
 testCheckAgent() {
   (
-    ssh () { return 0; }
+    # Stubs
     ping () {
-      [ "$(echo $@)" == "-t 1 -c 1 azk-agent" ] && exit 0
-      [ "$(echo $@)" == "-t 1 -c 1 azk-agent.test" ] && exit 0
-      exit 68
+      [[ "$@" == "-t 1 -c 1 azk-agent.test" ]] && return 0
+      return 68
     }
-    export -f ping; export -f ssh
-    (
-      azk --help
-      assertTrue "azk --help"
-      export AZK_AGENT_HOST="azk-agent.test"
-      azk --help
-      assertTrue "azk --help"
-      export AZK_AGENT_HOST="azk-agent.notexist"
-      azk --help
-      assertTrue "azk --help; [ \$? -eq 68 ]"
-    )
+
+    AZK_AGENT_HOST="azk-agent.test"
+    assertTrue "Not resolve agent", "check_agent; [ \$? -eq 0 ]"
+
+    AZK_AGENT_HOST="azk-agent.notexist"
+    error_msg="Not found azk-agent in $AZK_AGENT_HOST"
+    assertEquals "${error_msg}$(printf "\n68")" "$(check_agent 2>&1 || echo "$?")"
+  )
+}
+
+testResolveAppDirInAgent() {
+  (
+    # Run in fixture path
+    AZK_APPS_PATH=$(dir_resolve $(fixtures))
+    cd ${AZK_APPS_PATH}
+    assertEquals "${AZK_AGENT_APPS_PATH}" $(resolve_app_agent_dir)
+
+    cd $(fixtures full_azkfile)
+    assertEquals "${AZK_AGENT_APPS_PATH}/full_azkfile" "$(resolve_app_agent_dir)"
+    assertTrue resolve_app_agent_dir
+
+    cd ${AZK_APPS_PATH}/..
+    error_msg="Not in azk application path"
+    assertEquals "${error_msg}$(printf "\n1")" "$(resolve_app_agent_dir 2>&1 || echo "$?")"
   )
 }
 
 testExecuteInAgent() {
   (
-    # Vars
-    params=(
-      'azk-agent cd /vagrant; ./bin/azk --help'
-      'azk-agent cd /vagrant; ./bin/azk exec'
-    )
-
-    export_a params
-
     # Run in fixture path
     cd $(fixtures full_azkfile)
+    app_path="$(resolve_app_agent_dir)"
+
+    # Vars
+    params=(
+      "azk-agent cd $app_path; /vagrant/bin/azk.exs --help"
+      "azk-agent cd $app_path; /vagrant/bin/azk.exs exec"
+    ); export_a params
 
     # Mocks
     ping () { exit 0; }
@@ -68,5 +82,5 @@ testExecuteInAgent() {
   )
 }
 
-. $(dirname $0)/../test_helper.sh
+. ${_AZK_PATH}/test/test_helper.sh
 
