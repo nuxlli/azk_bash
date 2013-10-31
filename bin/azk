@@ -18,7 +18,8 @@ check_agent () {
 }
 
 run_command () {
-  exit 0
+  ssh $AZK_AGENT_HOST "cd /vagrant; ./bin/azk ${@}"
+  exit $?
 }
 
 azk_main () {
