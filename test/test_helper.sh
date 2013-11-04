@@ -36,10 +36,7 @@ import_a () {
 export -f import_a
 
 # Tmp dir
-tmp_path=$_AZK_PATH/tmp/test
-if [[ ! -d $tmp_path ]]; then
-  mkdir -p $tmp_path
-fi
+tmp_path=`mktemp -d 2>/dev/null || mktemp -d -t azk`
 
 # Pipe to comunication subshell
 pipe="$tmp_path/$(date +%s)$RANDOM"

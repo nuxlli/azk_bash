@@ -36,10 +36,11 @@ check_agent () {
 
 resolve_app_agent_dir () {
   local base=${AZK_AGENT_APPS_PATH}
+  [[ "$base" == "$(pwd)" ]] && echo $base && return 0
 
   # Valid subdirectory
   local path="$(pwd | sed 's/'"$(escape_path $AZK_APPS_PATH)"'//g')"
-  [ "$path" != "$(pwd)" ] && echo $base$path && return 0
+  [[ "$path" != "$(pwd)" ]] && echo $base$path && return 0
 
   # Not valid app path
   echo "Not in azk application path" >&2

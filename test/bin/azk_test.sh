@@ -36,6 +36,7 @@ testResolveAppDirInAgent() {
   (
     # Run in fixture path
     AZK_APPS_PATH=$(dir_resolve $(fixtures))
+
     cd ${AZK_APPS_PATH}
     assertEquals "${AZK_AGENT_APPS_PATH}" $(resolve_app_agent_dir)
 
@@ -52,6 +53,8 @@ testResolveAppDirInAgent() {
 testExecuteInAgent() {
   (
     # Run in fixture path
+    # Run in fixture path
+    export AZK_APPS_PATH=$(dir_resolve $(fixtures))
     cd $(fixtures full_azkfile)
     app_path="$(resolve_app_agent_dir)"
 
