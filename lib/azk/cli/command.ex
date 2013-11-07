@@ -83,6 +83,21 @@ defmodule Azk.Cli.Command do
   end
 
   @doc """
+  Returns all loaded tasks. Modules that are not yet loaded
+  won't show up. Check `load_all/0` if you want to preload all commands.
+  """
+  def all_modules do
+    Enum.reduce :code.all_loaded, [], fn({ module, _ }, acc) ->
+      case atom_to_list(module) do
+        'Elixir.Azk.Cli.Commands.' ++ _ ->
+          if is_command?(module), do: [module|acc], else: acc
+        _ ->
+          acc
+      end
+    end
+  end
+
+  @doc """
   Gets the moduledoc for the given command `module`.
   Returns the moduledoc or `nil`.
   """
@@ -102,6 +117,13 @@ defmodule Azk.Cli.Command do
       { :shortdoc, [shortdoc] } -> shortdoc
       _ -> nil
     end
+  end
+
+  @doc """
+  Returns the task name for the given `module`.
+  """
+  def command_name(module) do
+    Mix.Utils.module_name_to_command(module, 2)
   end
 
   defp is_command?(module) do

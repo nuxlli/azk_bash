@@ -39,8 +39,7 @@ defmodule Azk.Cli do
   end
 
   defp display_banner() do
-    IO.puts "Banner #{:uuid.to_string(:uuid.uuid4())}"
-    #run_command "help", []
+    run_command "help", []
   end
 
   defp display_version() do
