@@ -12,11 +12,7 @@ defmodule Azk.Cli.Commands.Exec do
       $ azk exec npm install
   """
   def run(app_path, _argv) do
-    app = AzkApp.new(path: app_path).load!
-
-    # Deploy
-    IO.puts("Deploy app #{app.path} to #{app.mount_folder}")
-    app.deploy!
+    _app = AzkApp.new(path: app_path).load!
   end
 end
 

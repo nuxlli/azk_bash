@@ -55,8 +55,8 @@ defmodule Azk.Cli.AzkApp do
   Deploy app
   """
   @spec deploy!(t) :: any
-  def deploy!(app(path: path) = this) do
-    Azk.Deployers.Bindfs.sync!(path, mount_folder(this))
+  def deploy!(app(path: _path) = _this) do
+    #Azk.Deployers.Bindfs.sync!(path, mount_folder(this))
   end
 
   @doc """
