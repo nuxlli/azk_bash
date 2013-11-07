@@ -63,11 +63,12 @@ azk_main () {
       show_version
       ;;
     *)
-      check_agent && run_command "${@}"
+      #echo "${@}"
+      check_agent && run_command ${@}
   esac
 }
 
 # sourced or run
-if [ ! $# -ne 1 ]; then
+if [[ $BASH_SOURCE == $0 ]]; then
   azk_main "${@}"
 fi

@@ -7,7 +7,6 @@ defmodule Azk.Mixfile do
       elixir: "~> 0.10.3",
       deps: deps,
       configs: [
-        azk_agent_host: {:from_env, :AZK_AGENT_HOST, "192.168.50.4"},
         azk_data_path: {:from_env, :AZK_DATA_PATH, Path.join([__DIR__, "/data"])},
         overrides: [ exdocker: [ ] ]
       ]

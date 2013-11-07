@@ -61,7 +61,7 @@ testExecuteInAgent() {
     # Vars
     params=(
       "azk-agent cd $app_path; /vagrant/bin/azk.exs --help"
-      "azk-agent cd $app_path; /vagrant/bin/azk.exs exec"
+      "azk-agent cd $app_path; /vagrant/bin/azk.exs exec /bin/bash"
     ); export_a params
 
     # Mocks
@@ -78,7 +78,7 @@ testExecuteInAgent() {
       assertEquals "0 ${params[0]}" "$(<$pipe)" # ssh return
       assertTrue "[ $(<$pipe) == "0" ]" # azk return
 
-      $(sleep 0.5; azk exec; echo $? >$pipe ) &
+      $(sleep 0.5; azk exec /bin/bash; echo $? >$pipe ) &
       assertEquals "0 ${params[1]}" "$(<$pipe)" # ssh return
       assertTrue "[ $(<$pipe) == "0" ]" # azk return
     )
