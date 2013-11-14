@@ -17,7 +17,7 @@ set -e
 
 command_path() {
   local command="$1"
-  command -v azk-"$command" || command -v azk-sh-"$command" || true
+  command -v azk-"$command" || true
 }
 
 extract_initial_comment_block() {
@@ -143,7 +143,7 @@ if [ -z "$1" ] || [ "$1" == "azk" ]; then
   [ -z "$usage" ] || exit
   echo
   echo "Some useful azk commands are:"
-  print_summaries commands local global shell install uninstall rehash version versions which whence
+  print_summaries commands init
   echo
   echo "See \`azk help <command>' for information on a specific command."
   echo "For full documentation, see: https://github.com/azukiapp/azk#readme"
