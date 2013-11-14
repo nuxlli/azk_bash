@@ -13,3 +13,35 @@ load ../test_helper
   assert_failure
   assert_output "azk: no such command \`does-not-exist'"
 }
+
+@test "default AZK_ROOT" {
+  AZK_ROOT="" run azk root
+  assert_success
+  assert_output "$_AZK_PATH"
+}
+
+@test "inherited AZK_ROOT" {
+  AZK_ROOT=/opt/azk run azk root
+  assert_success
+  assert_output "/opt/azk"
+}
+
+@test "default AZK_DIR" {
+  run azk echo AZK_DIR
+  assert_output "$(pwd)"
+}
+
+@test "inherited AZK_DIR" {
+  dir="${BATS_TMPDIR}/myproject"
+  mkdir -p "$dir"
+  AZK_DIR="$dir" run azk echo AZK_DIR
+  assert_output "$dir"
+}
+
+@test "invalid AZK_DIR" {
+  dir="${BATS_TMPDIR}/does-not-exist"
+  assert [ ! -d "$dir" ]
+  AZK_DIR="$dir" run azk echo AZK_DIR
+  assert_failure
+  assert_output "azk: cannot change working directory to \`$dir'"
+}

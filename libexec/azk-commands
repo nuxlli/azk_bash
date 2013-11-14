@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Summary: List all available azk commands
-# Usage: azk commands [--sh|--no-sh]
+# Usage: azk commands
 
 set -e
 [ -n "$AZK_DEBUG" ] && set -x

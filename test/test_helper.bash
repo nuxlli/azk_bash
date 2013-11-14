@@ -5,7 +5,7 @@ unset AZK_DIR
 _AZK_PATH=${_AZK_PATH:-`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} )\`/..; pwd`}
 
 AZK_FILE_NAME="azkfile.json"
- AZK_TEST_DIR="${BATS_TMPDIR}/rbenv"
+ AZK_TEST_DIR="${BATS_TMPDIR}/azk"
 
 # guard against executing this block twice due to bats internals
 if [ "$AZK_ROOT" != "${AZK_TEST_DIR}/root" ]; then
@@ -14,6 +14,7 @@ if [ "$AZK_ROOT" != "${AZK_TEST_DIR}/root" ]; then
 
   PATH=/usr/bin:/bin:/usr/sbin:/sbin
   PATH="${AZK_TEST_DIR}/bin:$PATH"
+  PATH="${_AZK_PATH}/test/libexec:$PATH"
   PATH="${_AZK_PATH}/libexec:$PATH"
   export PATH
 fi
