@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Summary: List all available azk commands
+# Usage: azk commands [--sh|--no-sh]
+
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+# Provide azk completions
+if [ "$1" = "--complete" ]; then
+  exit
+fi
+
+IFS=: paths=($PATH)
+
+shopt -s nullglob
+
+{ for path in "${paths[@]}"; do
+    for command in "${path}/azk-"*; do
+      echo "${command##*azk-}"
+    done
+  done
+} | sort | uniq
