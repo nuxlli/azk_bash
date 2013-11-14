@@ -1,3 +1,5 @@
+unset AZK_VERSION
+unset AZK_DIR
 
  __FILE__="${BASH_SOURCE}"
 _AZK_PATH=${_AZK_PATH:-`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} )\`/..; pwd`}
@@ -5,9 +7,16 @@ _AZK_PATH=${_AZK_PATH:-`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} 
 AZK_FILE_NAME="azkfile.json"
  AZK_TEST_DIR="${BATS_TMPDIR}/rbenv"
 
-PATH=/usr/bin:/bin:/usr/sbin:/sbin
-PATH="${_AZK_PATH}/libexec:$PATH"
-export PATH
+# guard against executing this block twice due to bats internals
+if [ "$AZK_ROOT" != "${AZK_TEST_DIR}/root" ]; then
+  export AZK_ROOT="${AZK_TEST_DIR}/root"
+  export HOME="${AZK_TEST_DIR}/home"
+
+  PATH=/usr/bin:/bin:/usr/sbin:/sbin
+  PATH="${AZK_TEST_DIR}/bin:$PATH"
+  PATH="${_AZK_PATH}/libexec:$PATH"
+  export PATH
+fi
 
 teardown() {
   rm -rf "$AZK_TEST_DIR"
