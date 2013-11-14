@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Summary: Search azk file in current project
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+find_local_file() {
+  local root="$1"
+  while [ -n "$root" ]; do
+    if [ -e "${root}/azkfile.json" ]; then
+      echo "${root}/azkfile.json"
+      exit
+    fi
+    root="${root%/*}"
+  done
+}
+
+find_local_file "$AZK_DIR"
+[ "$AZK_DIR" = "$PWD" ] || find_local_file "$PWD"

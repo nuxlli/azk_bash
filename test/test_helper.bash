@@ -2,7 +2,8 @@
  __FILE__="${BASH_SOURCE}"
 _AZK_PATH=${_AZK_PATH:-`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} )\`/..; pwd`}
 
-AZK_TEST_DIR="${BATS_TMPDIR}/rbenv"
+AZK_FILE_NAME="azkfile.json"
+ AZK_TEST_DIR="${BATS_TMPDIR}/rbenv"
 
 PATH=/usr/bin:/bin:/usr/sbin:/sbin
 PATH="${_AZK_PATH}/libexec:$PATH"
