@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Summary: Display the root directory
+echo $AZK_ROOT
