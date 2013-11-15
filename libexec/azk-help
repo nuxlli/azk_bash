@@ -15,6 +15,12 @@
 set -e
 [ -n "$AZK_DEBUG" ] && set -x
 
+# Provide azk completions
+if [ "$1" = "--complete" ]; then
+  command azk-commands
+  exit
+fi
+
 command_path() {
   local command="$1"
   command -v azk-"$command" || true
