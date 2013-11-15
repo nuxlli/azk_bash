@@ -14,5 +14,14 @@ find_local_file() {
   done
 }
 
-find_local_file "$AZK_DIR"
-[ "$AZK_DIR" = "$PWD" ] || find_local_file "$PWD"
+file=$(
+  find_local_file "$AZK_DIR"
+  [ "$AZK_DIR" = "$PWD" ] || find_local_file "$PWD"
+)
+
+if [ -z "$file" ]; then
+  echo "azk: no such azkfile.json in current project" >&2
+  exit 1
+else
+  echo $file
+fi
