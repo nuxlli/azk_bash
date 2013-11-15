@@ -14,7 +14,7 @@ git_commit() {
 
 @test "default version" {
   assert [ ! -e "$AZK_ROOT" ]
-  run azk---version
+  run azk-version
   assert_success
   [[ $output == "azk 0."* ]]
 }
@@ -29,7 +29,7 @@ git_commit() {
   git_commit
 
   cd "$AZK_TEST_DIR"
-  run azk---version
+  run azk-version
   assert_success
   [[ $output == "azk 0.4.1-2-g"* ]]
 }
@@ -41,6 +41,6 @@ git_commit() {
   git_commit
 
   cd "$AZK_TEST_DIR"
-  run azk---version
+  run azk-version
   [[ $output == "azk 0."* ]]
 }
