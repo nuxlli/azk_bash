@@ -3,7 +3,7 @@
 
 Vagrant.configure("2") do |config|
   config.vm.box = "azk"
-  config.vm.network "private_network", ip: "192.168.50.4"
+  config.vm.network "private_network", ip: ENV["AZK_AGENT_IP"] || "192.168.50.4"
 
   apps_path = File.expand_path(ENV["AZK_APPS_PATH"] || "~/Sites")
   data_path = File.expand_path(ENV["AZK_DATA_PATH"] || "./data")

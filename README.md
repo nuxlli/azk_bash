@@ -35,19 +35,37 @@ $ azk web                           # Health computer API endpoint (http://[proj
 
 ### OS dependencies:
 
-- bindfs
+* Install [vagrant](http://www.vagrantup.com)
 
 ### Install
 
-1. install erlang and elixir
-	* We recommend to use **[kerl](https://github.com/spawngrid/kerl)** and **[exenv](https://github.com/mururu/exenv)**
-	* More options: [http://elixir-lang.org/getting_started/1.html](http://elixir-lang.org/getting_started/1.html)
-2. clone this repo
+1. clone this repo
    * `$ git clone https://github.com/azukiapp/azk.git` and `$ cd azk`
-3. install depedences and check tests
-   * `$ MIX_ENV=test mix deps.get`
-   * `$ mix test`
-4. `$ ./bin/azk help`
+3. adding in shell profile (ex: ~/.bash_profile)
+
+```bash
+# Azk
+export      AZK_ROOT=[azk path]
+export  AZK_AGENT_IP="192.168.100.1"
+export AZK_APPS_PATH=~/Sites
+if [ -d $AZK_ROOT/bin/azk ]; then
+  export PATH=$AZK_ROOT/bin:$PATH
+  eval "$(azk sh-init -)"
+fi
+```
+
+```bash
+$ source ~/.bash_profile
+```
+
+2. run azk-agent
+	* `$ vagrant up`
+3. adding azk-agent in /etc/hosts
+	* `$ echo "$AZK_AGENT_IP azk-agent" | sudo tee -a /etc/hosts`
+4. install depedences and check tests
+   * `$ make get-deps`
+   * `$ make test`
+5. `$ ./bin/azk help`
 
 ## License
 
