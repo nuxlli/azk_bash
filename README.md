@@ -40,7 +40,12 @@ $ azk web                           # Health computer API endpoint (http://[proj
 ### Install
 
 1. clone this repo
-   * `$ git clone https://github.com/azukiapp/azk.git` and `$ cd azk`
+
+```bash
+$ git clone https://github.com/azukiapp/azk.git
+$ cd azk
+```
+
 3. adding in shell profile (ex: ~/.bash_profile)
 
 ```bash
@@ -59,13 +64,29 @@ $ source ~/.bash_profile
 ```
 
 2. run azk-agent
-	* `$ vagrant up`
+
+```bash
+$ vagrant up
+```
+
 3. adding azk-agent in /etc/hosts
-	* `$ echo "$AZK_AGENT_IP azk-agent" | sudo tee -a /etc/hosts`
+
+```bash
+$ echo "$AZK_AGENT_IP azk-agent" | sudo tee -a /etc/hosts
+```
+	
 4. install depedences and check tests
-   * `$ make get-deps`
-   * `$ make test`
-5. `$ ./bin/azk help`
+
+```bash
+$ make get-deps
+$ make test
+```
+   
+5. enjoy
+
+```bash
+$ azk help
+```
 
 ## License
 
