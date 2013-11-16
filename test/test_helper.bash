@@ -55,6 +55,14 @@ assert_equal() {
   fi
 }
 
+assert_match() {
+  if [ ! $(echo $2 | grep $1) ]; then
+    { echo "expected match: $1"
+      echo "actual: $2"
+    } | flunk
+  fi
+}
+
 assert_output() {
   local expected
   if [ $# -eq 0 ]; then expected="$(cat -)"
@@ -95,4 +103,9 @@ assert() {
   if ! "$@"; then
     flunk "failed: $@"
   fi
+}
+
+p() {
+  echo "$@" >&2
+  exit 1000
 }
