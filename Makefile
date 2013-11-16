@@ -23,11 +23,13 @@ test: test-local
 	@echo "\n\x1b[0m"
 	@ssh azk-agent "cd /vagrant; make agent=true test-local"
 
-test-local:
+test-local: deps/bats/bin/bats
 	@printf ${LOCAL}
 	@echo "Shell tests\n"
-	@bash ./test/bin/azk_test.sh
-	@echo "\nMix tests"
-	@mix test
+	@bash ./deps/bats/bin/bats test/cli
 
-.PHONY: test test-local
+get-deps:
+	@mkdir -p deps
+	@cd deps; git clone https://github.com/sstephenson/bats
+
+.PHONY: test test-local get-deps
