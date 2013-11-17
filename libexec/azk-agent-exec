@@ -12,6 +12,10 @@ if [ "$1" = "--complete" ]; then
   exec azk-commands
 fi
 
+if [ "$1" = "--final" ]; then
+  final=true; shift
+fi
+
 azk_command="$1"
 
 if [ -z "$azk_command" ]; then
@@ -19,23 +23,26 @@ if [ -z "$azk_command" ]; then
   exit 1
 fi
 
-linux_exec() {
-  types="[file|function|alias]"
-  if [ $(type docker | grep -q $types) ]; then
-    echo "azk: cannot find docker" >&2
-    exit 1
-  fi
-
-  command=$1; shift
-  azk $command --final $@
+check_agent() {
+  [ $(ssh "${1}" "echo 1" &>/dev/null; echo $?) -eq 0 ] && return 0
+  return 1
 }
 
-case `uname -s` in
-  Linux)
-    linux_exec $@
+# find docker command
+case `type -t docker` in
+  file|function|alias)
+    command=$1; shift
+    azk $command --final $@
     ;;
   *)
-    echo "azk: SO not supported - are you missing azk-agent?" >&2
-    exit 1
+     host=${AZK_AGENT_HOST:-azk-agent}
+    check=$(check_agent $host; echo $?)
+    if [ ! -z "$final" -o "$check" -eq 1 ]; then
+      echo "azk: cannot find docker or agent" >&2
+      exit 1
+    fi
+
+    echo "agent"
+    exit 0
 esac
 
