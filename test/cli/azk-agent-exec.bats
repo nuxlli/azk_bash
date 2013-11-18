@@ -70,7 +70,7 @@ set_not_docker() {
   azk-agent-exec echo "any value"
   run azk-agent-exec echo "any value"
   assert_success
-  assert_output "azk-agent cd /azk/apps/project; /vagrant/bin/azk echo --final any value"
+  assert_output "azk-agent cd /azk/apps/project; /vagrant/libexec/azk echo --final any value"
 }
 
 @test "show erro if not valid azk-agent path" {
@@ -79,7 +79,7 @@ set_not_docker() {
     [[ "$@" == "azk-agent echo 1" ]] && return 0;
   }; export -f ssh
   export AZK_APPS_PATH="${AZK_TEST_DIR}/projects"
-  
+
   run azk-agent-exec echo "any value"
   assert_failure
   assert_output "azk: not in azk applications path"

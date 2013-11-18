@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# Summary: Run an executable with the image-app
+#
+# Usage: azk exec <command> [arg1 arg2...]
+
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+# Provide azk completions
+if [ "$1" = "--complete" ]; then
+  exit
+fi
+
+if [ "$1" = "--final" ]; then
+  final=true; shift
+fi
+
+AZK_COMMAND="$1"
+
+if [ -z "$AZK_COMMAND" ]; then
+  azk-help --usage exec >&2
+  exit 1
+fi
+
+if [ ! $(azk-azkfile) ]; then
+  exit 1
+fi
+
+if [ -z "$final" ]; then
+  azk-agent-exec exec $@
+else
+  eval "$@"
+fi
