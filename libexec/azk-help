@@ -149,7 +149,7 @@ if [ -z "$1" ] || [ "$1" == "azk" ]; then
   [ -z "$usage" ] || exit
   echo
   echo "Some useful azk commands are:"
-  print_summaries commands init
+  print_summaries commands init exec
   echo
   echo "See \`azk help <command>' for information on a specific command."
   echo "For full documentation, see: https://github.com/azukiapp/azk#readme"

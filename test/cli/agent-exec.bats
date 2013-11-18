@@ -44,10 +44,10 @@ set_not_docker() {
 @test "invalid agent host" {
   # mocks
   set_not_docker
-  ssh() {
+  azk-agent-ssh() {
     [[ "$@" == "azk-agent.invalid echo 1" ]] && return 255;
     return 0;
-  }; export -f ssh
+  }; export -f azk-agent-ssh
 
   export AZK_AGENT_HOST="azk-agent.invalid"
   run azk-agent-exec exec
@@ -57,11 +57,11 @@ set_not_docker() {
 
 @test "not docker and valid agent? Execute final command" {
   set_not_docker
-  ssh() {
+  azk-agent-ssh() {
     [[ "$@" == "azk-agent echo 1" ]] && return 0;
     echo "$@"
     return 0;
-  }; export -f ssh
+  }; export -f azk-agent-ssh
 
   export AZK_APPS_PATH="${AZK_TEST_DIR}"
   mkdir -p $AZK_TEST_DIR/project
@@ -70,14 +70,14 @@ set_not_docker() {
   azk-agent-exec echo "any value"
   run azk-agent-exec echo "any value"
   assert_success
-  assert_output "azk-agent cd /azk/apps/project; /vagrant/libexec/azk echo --final any value"
+  assert_output "azk-agent cd /home/core/azk/data/apps/project; /home/core/azk/libexec/azk echo --final any value"
 }
 
 @test "show erro if not valid azk-agent path" {
   set_not_docker
-  ssh() {
+  azk-agent-ssh() {
     [[ "$@" == "azk-agent echo 1" ]] && return 0;
-  }; export -f ssh
+  }; export -f azk-agent-ssh
   export AZK_APPS_PATH="${AZK_TEST_DIR}/projects"
 
   run azk-agent-exec echo "any value"

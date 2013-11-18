@@ -21,7 +21,7 @@ endif
 test: test-local
 	@printf "\n\n\x1b[30;44;5;82m%${REMOTE_PRE_BANNER}s${REMOTE_BANNER} %${REMOTE_PRE_BANNER}s"
 	@echo "\n\x1b[0m"
-	@ssh azk-agent "cd /vagrant; make agent=true test-local"
+	@./libexec/azk agent-ssh azk-agent "cd /home/core/azk; ./deps/bats/bin/bats test/cli"
 
 test-local: deps/bats/bin/bats
 	@printf ${LOCAL}

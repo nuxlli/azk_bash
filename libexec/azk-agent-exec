@@ -24,7 +24,7 @@ if [ -z "$azk_command" ]; then
 fi
 
 check_agent() {
-  [ $(ssh "${1}" "echo 1" &>/dev/null; echo $?) -eq 0 ] && return 0
+  [ $(azk-agent-ssh "${1}" "echo 1" &>/dev/null; echo $?) -eq 0 ] && return 0
   return 1
 }
 
@@ -33,7 +33,7 @@ escape_path () {
 }
 
 resolve_app_agent_dir () {
-  local base="${AZK_AGENT_APPS_PATH:-/azk/apps}"
+  local base="${AZK_AGENT_APPS_PATH:-/home/core/azk/data/apps}"
 
   # Valid subdirectory
   local path="$(pwd | sed 's/'"$(escape_path $AZK_APPS_PATH)"'//g')"
@@ -61,6 +61,6 @@ case `type -t docker` in
     # Run command in agent
     app_path=`resolve_app_agent_dir`
     command=$1; shift
-    ssh $host "cd $app_path; /vagrant/libexec/azk $command --final $@"
+    azk-agent-ssh $host "cd $app_path; /home/core/azk/libexec/azk $command --final $@"
 esac
 
