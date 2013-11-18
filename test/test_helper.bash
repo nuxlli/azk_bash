@@ -56,7 +56,7 @@ assert_equal() {
 }
 
 assert_match() {
-  if [ ! $(echo $2 | grep $1) ]; then
+  if [ ! $(echo "${2}" | grep "${1}") ]; then
     { echo "expected match: $1"
       echo "actual: $2"
     } | flunk

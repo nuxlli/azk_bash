@@ -2,6 +2,11 @@
 
 load ../test_helper
 
+setup() {
+  mkdir -p "$AZK_TEST_DIR"
+  cd "$AZK_TEST_DIR"
+}
+
 set_not_docker() {
   type() {
     [[ "$@" == "-t docker" ]] && exit 1
@@ -50,22 +55,32 @@ set_not_docker() {
   assert_match '^azk: cannot find docker or agent' "${lines[0]}"
 }
 
-mock_command() {
-  command="$1"
-  eval "
-  $command() {
-    [[ \"\$@\" == \"azk-agent echo 1\" ]] && return 0;
-    shift
-    exec \$@
-  }; export -f $command
-  "
-}
-
 @test "not docker and valid agent? Execute final command" {
   set_not_docker
-  mock_command ssh
+  ssh() {
+    [[ "$@" == "azk-agent echo 1" ]] && return 0;
+    echo "$@"
+    return 0;
+  }; export -f ssh
 
-  run azk-agent-exec echo "hello"
+  export AZK_APPS_PATH="${AZK_TEST_DIR}"
+  mkdir -p $AZK_TEST_DIR/project
+  cd project
+
+  azk-agent-exec echo "any value"
+  run azk-agent-exec echo "any value"
   assert_success
+  assert_output "azk-agent cd /azk/apps/project; /vagrant/bin/azk echo --final any value"
 }
 
+@test "show erro if not valid azk-agent path" {
+  set_not_docker
+  ssh() {
+    [[ "$@" == "azk-agent echo 1" ]] && return 0;
+  }; export -f ssh
+  export AZK_APPS_PATH="${AZK_TEST_DIR}/projects"
+  
+  run azk-agent-exec echo "any value"
+  assert_failure
+  assert_output "azk: not in azk applications path"
+}

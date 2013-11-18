@@ -28,6 +28,22 @@ check_agent() {
   return 1
 }
 
+escape_path () {
+  echo $(echo $@ | sed 's/\//\\\//g')
+}
+
+resolve_app_agent_dir () {
+  local base="${AZK_AGENT_APPS_PATH:-/azk/apps}"
+
+  # Valid subdirectory
+  local path="$(pwd | sed 's/'"$(escape_path $AZK_APPS_PATH)"'//g')"
+  [[ "$path" != "$(pwd)" ]] && echo $base$path && return 0
+
+  # Not valid app path
+  echo "azk: not in azk applications path" >&2
+  return 1
+}
+
 # find docker command
 case `type -t docker` in
   file|function|alias)
@@ -42,7 +58,9 @@ case `type -t docker` in
       exit 1
     fi
 
-    echo "agent"
-    exit 0
+    # Run command in agent
+    app_path=`resolve_app_agent_dir`
+    command=$1; shift
+    ssh $host "cd $app_path; /vagrant/bin/azk $command --final $@"
 esac
 
