@@ -16,7 +16,7 @@
       "default": true,
       "host": "dev.azk.io/blog",
       "alias": [
-        // "blog.dev.azk.io", Default
+        "blog.dev.azk.io", // Default
         "blog2.dev.azk.io"
       ],
       "options": {
