@@ -34,7 +34,7 @@ set_not_docker() {
 }
 
 @test "not have docker and is final execute" {
-  #mocks
+  # mocks
   set_not_docker
   run azk-agent-exec --final exec
   assert_failure

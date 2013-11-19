@@ -52,8 +52,7 @@ case `type -t docker` in
     ;;
   *)
      host=${AZK_AGENT_HOST:-azk-agent}
-    check=$(check_agent $host; echo $?)
-    if [ ! -z "$final" -o "$check" -eq 1 ]; then
+    if [ ! -z "$final" ] || [ "$(check_agent $host; echo $?)" -eq 1 ]; then
       echo "azk: cannot find docker or agent" >&2
       exit 1
     fi
