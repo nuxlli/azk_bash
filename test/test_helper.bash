@@ -6,18 +6,13 @@ _AZK_PATH=${_AZK_PATH:-`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} 
 
 AZK_FILE_NAME="azkfile.json"
  AZK_TEST_DIR="${BATS_TMPDIR}/azk"
+HOME="${AZK_TEST_DIR}/home"
 
-# guard against executing this block twice due to bats internals
-if [ "$AZK_ROOT" != "${AZK_TEST_DIR}/root" ]; then
-  export AZK_ROOT="${AZK_TEST_DIR}/root"
-  export HOME="${AZK_TEST_DIR}/home"
-
-  PATH=/usr/bin:/bin:/usr/sbin:/sbin
-  PATH="${AZK_TEST_DIR}/bin:$PATH"
-  PATH="${_AZK_PATH}/test/libexec:$PATH"
-  PATH="${_AZK_PATH}/libexec:$PATH"
-  export PATH
-fi
+PATH=/usr/bin:/bin:/usr/sbin:/sbin
+PATH="${AZK_TEST_DIR}/bin:$PATH"
+PATH="${_AZK_PATH}/test/fixtures/libexec:$PATH"
+PATH="${_AZK_PATH}/libexec:$PATH"
+export PATH
 
 teardown() {
   rm -rf "$AZK_TEST_DIR"
