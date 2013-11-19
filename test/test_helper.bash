@@ -105,6 +105,11 @@ assert() {
   fi
 }
 
+create_file() {
+  mkdir -p "$(dirname "$1")"
+  touch "$1"
+}
+
 p() {
   echo "$@" >&2
   exit 1000

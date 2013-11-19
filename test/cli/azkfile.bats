@@ -7,11 +7,6 @@ setup() {
   cd "$AZK_TEST_DIR"
 }
 
-create_file() {
-  mkdir -p "$(dirname "$1")"
-  touch "$1"
-}
-
 @test "does not exist $AZK_FILE_NAME" {
   run azk azkfile
   assert_failure

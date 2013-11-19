@@ -7,11 +7,6 @@ setup() {
   cd "$AZK_TEST_DIR"
 }
 
-create_file() {
-  mkdir -p "$(dirname "$1")"
-  touch "$1"
-}
-
 @test "blank invocation" {
   run azk-exec
   assert_failure
