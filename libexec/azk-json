@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+#
+# Summary: Bind of jq
+#
+# Usage: azk json [arg1..arg2]
+
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+OS=Unknown
+ARCH=Unknown
+
+# Find ARCH by machine
+case `uname -m` in
+  x86_64) ARCH=x64;;
+  i686|i386) ARCH=x86;;
+esac
+
+# Find OS by kernel name
+case `uname -s` in
+  Linux)
+    OS=linux
+    OSARCH="$OS/jq_$ARCH"
+    ;;
+  Darwin)
+    OS=osx
+    OSARCH="jq_$OS" # universal
+    ;;
+  *)
+    echo "azk-json: SO or architecture is not supported" >&2
+    exit 1;
+esac
+
+private="$(azk root)/private"
+command="${private}/jq/$OSARCH $@"
+
+# Check is a pipe or terminal
+if [ -z "$1" -o "$1" == "--version" ]; then
+  exec $command
+else
+  exec "${private}/remccoms3" | $command
+fi
