@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#
+# TODO: Refactor this and ./jq not to duplicate code
+
+set -e
+OS=Unknown
+ARCH=Unknown
+
+# Find ARCH by machine
+case `uname -m` in
+  x86_64) ARCH=x64;;
+  i686|i386) ARCH=x86;;
+esac
+
+# Find OS by kernel name
+case `uname -s` in
+  Linux)
+    OS=linux
+    OSARCH="$OS/socat_$ARCH"
+    ;;
+  Darwin)
+    OS=osx
+    OSARCH="socat_$OS" # universal
+    ;;
+  *)
+    echo "azk-json: SO or architecture is not supported" >&2
+    exit 1;
+esac
+
+# Get paths
+private="$(azk root)/private"
+command="${private}/socat/$OSARCH $@"
+
+# Execute comand
+eval "exec $command"
