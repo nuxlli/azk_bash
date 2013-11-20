@@ -13,6 +13,7 @@ LOCAL_BANNER_SIZE:= $(shell echo ${LOCAL_BANNER} | wc | awk '{print $$3}')
 LOCAL_PRE_BANNER := $$(( (${COLUMNS} - ${LOCAL_BANNER_SIZE}) / 2 ))
 
 TEST_FILES := $(shell find test -name '*.bats' | xargs)
+RERUN_PATTERN := "{Makefile,bin/azk,**/*.bash,**/*.bats,private/**/*,libexec/**/*}"
 
 ifeq ($(agent),true)
 	LOCAL := ""
@@ -34,4 +35,9 @@ get-deps:
 	@mkdir -p deps
 	@cd deps; git clone https://github.com/sstephenson/bats; echo
 
-.PHONY: test test-local get-deps
+# auto run test in development
+rerun:
+	@which rerun &>/dev/null || (echo "Rerun not found, install: gem install rerun" && exit 1)
+	@rerun -c --no-growl --pattern $(RERUN_PATTERN) "./deps/bats/bin/bats $(TEST_FILES)"
+
+.PHONY: test test-local get-deps rerun
