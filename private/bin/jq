@@ -32,11 +32,12 @@ case `uname -s` in
 esac
 
 private="$(azk root)/private"
-command="${private}/jq/$OSARCH $@"
+command="${private}/jq/$OSARCH '$@'"
 
 # Check is a pipe or terminal
+# TODO: If last parameter is a file should not use remccoms3
 if [ -z "$1" -o "$1" == "--version" ]; then
-  exec $command
+  eval "exec $command"
 else
-  exec "${private}/remccoms3" | $command
+  eval "exec \"${private}/bin/remccoms3\" | $command"
 fi

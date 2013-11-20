@@ -10,6 +10,7 @@ HOME="${AZK_TEST_DIR}/home"
 
 PATH=/usr/bin:/bin:/usr/sbin:/sbin
 PATH="${AZK_TEST_DIR}/bin:$PATH"
+PATH="${_AZK_PATH}/private/bin:$PATH"
 PATH="${_AZK_PATH}/test/fixtures/libexec:$PATH"
 PATH="${_AZK_PATH}/libexec:$PATH"
 export PATH

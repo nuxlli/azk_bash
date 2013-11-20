@@ -19,7 +19,7 @@ mock_uname() {
     echo $@
   }; export -f exec
 
-  run azk-json
+  run jq
   assert_success
   assert_output "$(azk root)/private/jq/linux/jq_x86"
 }
@@ -31,7 +31,7 @@ mock_uname() {
     echo $@
   }; export -f exec
 
-  run azk-json
+  run jq
   assert_success
   assert_output "$(azk root)/private/jq/jq_osx"
 }
@@ -41,18 +41,19 @@ mock_uname() {
   uname() { exit 1; }
   export -f uname
 
-  run azk-json
+  echo $PATH
+  run jq
   assert_failure "azk-json: SO or architecture is not supported"
 }
 
 @test "forward parameters" {
-  run azk-json --version
+  run jq --version
   assert_success
   assert_match 'jq version [0-9]\.[0-9]' "$output"
 }
 
 @test "pipe test" {
-  result=$(echo '{ "foo": "bar" }' | azk-json ".foo")
+  result=$(echo '{ "foo": "bar" }' | jq ".foo")
 
   run echo "$result"
   assert_success
@@ -60,9 +61,16 @@ mock_uname() {
 }
 
 @test "clean comments" {
-  result=$(echo '{ "foo": "bar" /* comment */ }' | azk-json ".foo")
+  result=$(echo '{ "foo": "bar" /* comment */ }' | jq ".foo")
 
   run echo "$result"
   assert_success
   assert_equal '"bar"' "${lines[0]}"
+}
+
+@test "more options in filters" {
+  result=$(echo '[[1,2], "string", {"a":2}, null]' | jq '.[] | length')
+  run echo $(echo "$result" | sed "s:\n: :g")
+  assert_success
+  assert_output "2 6 1 0"
 }
