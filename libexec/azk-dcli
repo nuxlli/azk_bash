@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+#
+# Summary: Request a url to docker service
+#
+# Usage: azk dcli <query>
+
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+# run only is --final command
+if [ ! "$1" = "--final" ]; then
+  exec azk-agent-exec dcli $@
+fi; shift
+
+# Docker socket
+AZK_DOCKER_SOCKET=${AZK_DOCKER_SOCKET:-/var/run/docker.sock}
+socket=$(find $AZK_DOCKER_SOCKET -type s 2>/dev/null | head -n 1)
+if [ -z "$socket" ]; then
+  echo "azk: requires docker socket is open" >&2
+  exit 1;
+fi
+
+# Request data
+path="$1"
+
+# Headers request
+declare -a request
+request+=("GET ${path} HTTP/1.1")
+request+=('Host: localhost:8080')
+
+# Format headers request
+printf -v request '%s\r\n' "${request[@]}"
+
+# Request
+response_raw="$(echo -en "$request" '\r\n\n' | socat unix:$socket stdio)"
+IFS=$'\r\n' response=($(echo "${response_raw}"))
+IFS=' ' first=($(echo "${response[0]%%$'\r'}"))
+
+if [ ! "${first[1]}" -eq 200 ]; then
+  echo "azk: error to request ${path} => ${first[1]}" >&2
+  exit 1;
+fi
+
+echo "${response[${#response[@]} - 1]}"
