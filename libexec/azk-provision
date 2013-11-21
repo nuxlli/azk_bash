@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+#
+# Summary: Performs the provisioning of specified image type
+#
+# Usage: azk provision <image-type>
+
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+image_type="$1"
+
+# requires parameter
+if [ -z "$image_type" ]; then
+  azk-help --usage provision >&2
+  exit 1
+fi
+
+# requires azkfile
+azkfile=`azk-azkfile`
+
+# run only is --final command
+if [ ! "$1" = "--final" ]; then
+  exec azk-agent-exec provision $@
+fi; shift
+
+meta() {
+  eval "$(cat <&0 | jq "$@ | @sh \"echo \(.)\"" | sed 's:^"::g' | sed 's:"$::g')"
+}
+
+azkfile_meta () {
+  cat $azkfile | meta "$@"
+}
+
+github() {
+  exec sed -n 's:\([:alnum:]*\)/\([[:alnum:]|-]*\)#\(.*\):\1 \2 \3:p'
+}
+
+image_type="$1"
+case $image_type in
+  box)
+    box=($(azkfile_meta ".box" | github))
+    user=${box[0]}
+    repo=${box[1]}
+    vers=${box[2]}
+
+    image="azk/boxes:${user}_${repo}_${vers}"
+    id=$((azk-dcli --final /images/$image/json || echo "{}") | meta ".id")
+
+    if [ "${id}" != "null" ]; then
+      echo "azk: box $image already provisioned"
+      exit 0
+    fi
+esac
+
+exit 1;

@@ -101,6 +101,11 @@ assert() {
   fi
 }
 
+cp_fixture() {
+  mkdir -p "$(dirname "$2")"
+  cp "${_AZK_PATH}/test/fixtures/${1}.json" $2
+}
+
 create_file() {
   mkdir -p "$(dirname "$1")"
   touch "$1"
