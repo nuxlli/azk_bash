@@ -95,15 +95,30 @@ refute_line() {
   fi
 }
 
+assert_include() {
+  eval 'local values=("${'$1'[@]}")'
+
+  local element
+  for element in "${values[@]}"; do
+      [[ "$element" == "$2" ]] && return 0
+  done
+
+  flunk "failed: array ${values[*]} not include $2}"
+}
+
 assert() {
   if ! "$@"; then
     flunk "failed: $@"
   fi
 }
 
+fixtures() {
+  echo "${_AZK_PATH}/test/fixtures/${1}"
+}
+
 cp_fixture() {
   mkdir -p "$(dirname "$2")"
-  cp "${_AZK_PATH}/test/fixtures/${1}.json" $2
+  cp "$(fixtures $1).json" $2
 }
 
 create_file() {

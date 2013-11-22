@@ -23,6 +23,9 @@ if [ ! "$1" = "--final" ]; then
   exec azk-agent-exec provision $@
 fi; shift
 
+# env
+AZK_DATA_PATH=${AZK_DATA_PATH:-`azk root`/data}
+
 meta() {
   eval "$(cat <&0 | jq "$@ | @sh \"echo \(.)\"" | sed 's:^"::g' | sed 's:"$::g')"
 }
@@ -35,21 +38,51 @@ github() {
   exec sed -n 's:\([:alnum:]*\)/\([[:alnum:]|-]*\)#\(.*\):\1 \2 \3:p'
 }
 
+clone_or_update() {
+  is_repo=$(git --git-dir="$2/.git" rev-parse &>/dev/null; echo $?)
+  if [ "$is_repo" -eq 0 ] ; then
+    git --git-dir="$2/.git" remote update
+  else
+    git clone $1 $2
+  fi
+  return $?
+}
+
+# TODO: Add support generic git repo
+# TODO: Add support to relative path repository
+# TODO: Add suporte a laste version
+provision_box() {
+  # Box information
+  read -r user repo vers <<<"$(azkfile_meta ".box" | github)"
+  image="azk/boxes:${user}_${repo}_${vers}"
+
+  # Search image
+  id=$(azk-dcli --final /images/$image/json 2>/dev/null || echo "{}")
+  id=$(echo $id | meta ".id")
+  if [ "${id}" != "null" ]; then
+    echo "azk: this image-box $image already provisioned"
+    exit 0
+  fi
+
+  # Clone repository
+     clone_url="https://github.com/$user/$repo"
+    clone_path="${AZK_DATA_PATH}/boxes/$user/$repo"
+
+  if ! clone_or_update $clone_url $clone_path ; then
+    echo "azk: could not get or update the box $clone_url repository"
+    exit 1;
+  fi
+
+  # Checkout in version
+  echo "azk: Checkout in version '$vers'..."
+  git --git-dir=$clone_path/.git checkout $vers # &>/dev/null
+
+  #exit 1;
+}
+
 image_type="$1"
 case $image_type in
   box)
-    box=($(azkfile_meta ".box" | github))
-    user=${box[0]}
-    repo=${box[1]}
-    vers=${box[2]}
-
-    image="azk/boxes:${user}_${repo}_${vers}"
-    id=$((azk-dcli --final /images/$image/json || echo "{}") | meta ".id")
-
-    if [ "${id}" != "null" ]; then
-      echo "azk: box $image already provisioned"
-      exit 0
-    fi
+    provision_box
 esac
 
-exit 1;
