@@ -10,7 +10,7 @@ mock_docker() {
   socat -T 2 UNIX-LISTEN:"${socket}" SYSTEM:"'fake-docker $1'" &
 }
 
-@test "requires exec in agent" {
+@test "$test_label requires exec in agent" {
   exec() { echo "$@"; return 1; }
   export -f exec
 
@@ -19,13 +19,13 @@ mock_docker() {
   assert_output "azk-agent-exec dcli GET /images/json"
 }
 
-@test "requires a docker socket" {
+@test "$test_label requires a docker socket" {
   run azk-dcli --final GET /images/json
   assert_failure
   assert_output "azk: requires docker socket is open"
 }
 
-@test "send request to socker with socat" {
+@test "$test_label send request to socker with socat" {
   mock_file="${AZK_TEST_DIR}/mock_docker"
   mkdir -p $(dirname "${mock_file}")
   cat > "${mock_file}" <<'EOF'
@@ -44,7 +44,7 @@ EOF
   assert_success '[]'
 }
 
-@test "docker response error" {
+@test "$test_label docker response error" {
   mock_file="${AZK_TEST_DIR}/mock_docker"
   mkdir -p $(dirname "${mock_file}")
   echo 'echo -en "HTTP/1.1 404 Not Found\r\n\r\n[]"' > $mock_file

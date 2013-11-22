@@ -2,19 +2,19 @@
 
 load ../test_helper
 
-@test "without args shows summary of common commands" {
+@test "$test_label without args shows summary of common commands" {
   run azk-help
   assert_success
   assert_line "Usage: azk <command> [<args>]"
   assert_line "Some useful azk commands are:"
 }
 
-@test "invalid command" {
+@test "$test_label invalid command" {
   run azk-help hello
   assert_failure "azk: no such command \`hello'"
 }
 
-@test "shows help for a specific command" {
+@test "$test_label shows help for a specific command" {
   mkdir -p "${AZK_TEST_DIR}/bin"
   cat > "${AZK_TEST_DIR}/bin/azk-hello" <<SH
 #!shebang
@@ -33,7 +33,7 @@ This command is useful for saying hello.
 SH
 }
 
-@test "replaces missing extended help with summary text" {
+@test "$test_label replaces missing extended help with summary text" {
   mkdir -p "${AZK_TEST_DIR}/bin"
   cat > "${AZK_TEST_DIR}/bin/azk-hello" <<SH
 #!shebang
@@ -51,7 +51,7 @@ Says "hello" to you, from azk
 SH
 }
 
-@test "extracts only usage" {
+@test "$test_label extracts only usage" {
   mkdir -p "${AZK_TEST_DIR}/bin"
   cat > "${AZK_TEST_DIR}/bin/azk-hello" <<SH
 #!shebang
@@ -65,7 +65,7 @@ SH
   assert_success "Usage: azk hello <world>"
 }
 
-@test "multiline usage section" {
+@test "$test_label multiline usage section" {
   mkdir -p "${AZK_TEST_DIR}/bin"
   cat > "${AZK_TEST_DIR}/bin/azk-hello" <<SH
 #!shebang
@@ -88,7 +88,7 @@ Help text.
 SH
 }
 
-@test "multiline extended help section" {
+@test "$test_label multiline extended help section" {
   mkdir -p "${AZK_TEST_DIR}/bin"
   cat > "${AZK_TEST_DIR}/bin/azk-hello" <<SH
 #!shebang

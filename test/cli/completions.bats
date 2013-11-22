@@ -9,14 +9,14 @@ create_command() {
   chmod +x "${bin}/$1"
 }
 
-@test "command with no completion support" {
+@test "$test_label command with no completion support" {
   create_command "azk-hello" "#!$BASH
     echo hello"
   run azk-completions hello
   assert_success ""
 }
 
-@test "command with completion support" {
+@test "$test_label command with completion support" {
   create_command "azk-hello" "#!$BASH
 # provide azk completions
 if [[ \$1 = --complete ]]; then
@@ -28,7 +28,7 @@ fi"
   assert_success "hello"
 }
 
-@test "forwards extra arguments" {
+@test "$test_label forwards extra arguments" {
   create_command "azk-hello" "#!$BASH
 # provide azk completions
 if [[ \$1 = --complete ]]; then

@@ -15,6 +15,12 @@ PATH="${_AZK_PATH}/test/fixtures/libexec:$PATH"
 PATH="${_AZK_PATH}/libexec:$PATH"
 export PATH
 
+# Label to use in test
+test_folder=`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} )\`; pwd`
+test_folder=$(echo $test_folder | sed 's/\//\\\//g')
+test_folder=$(echo "$(dirname "${BATS_TEST_FILENAME}")" | sed 's/'"${test_folder}"'//g')
+export test_label="${test_folder}/$(basename -s .bats "${BATS_TEST_FILENAME}"):"
+
 teardown() {
   rm -rf "$AZK_TEST_DIR"
 }

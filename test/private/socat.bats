@@ -12,7 +12,7 @@ mock_uname() {
   '
 }
 
-@test "call linux 32" {
+@test "$test_label call linux 32" {
   #mocks
   mock_uname i686 Linux
   exec() {
@@ -24,7 +24,7 @@ mock_uname() {
   assert_output "$(azk root)/private/socat/linux/socat_x86"
 }
 
-@test "call mac os x" {
+@test "$test_label call mac os x" {
   #mocks
   mock_uname i386 Darwin
   exec() {
@@ -36,7 +36,7 @@ mock_uname() {
   assert_output "$(azk root)/private/socat/socat_osx"
 }
 
-@test "a system not supported" {
+@test "$test_label a system not supported" {
   #mocks
   uname() { exit 1; }
   export -f uname
@@ -46,13 +46,13 @@ mock_uname() {
   assert_failure "azk-json: SO or architecture is not supported"
 }
 
-@test "forward parameters" {
+@test "$test_label forward parameters" {
   run socat -h
   assert_success
   assert_match 'socat by Gerhard Rieger' "$output"
 }
 
-@test "test socat" {
+@test "$test_label test socat" {
   mkdir -p ${AZK_TEST_DIR}
   socket="${AZK_TEST_DIR}/test_socat.sock"
 

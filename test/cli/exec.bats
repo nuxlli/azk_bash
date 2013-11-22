@@ -7,18 +7,18 @@ setup() {
   cd "$AZK_TEST_DIR"
 }
 
-@test "blank invocation" {
+@test "$test_label blank invocation" {
   run azk-exec
   assert_failure
   assert_match '^Usage:.*exec' "${lines[0]}"
 }
 
-@test "require azkfile" {
+@test "$test_label require azkfile" {
   run azk-exec /bin/bash
   assert_failure "$(azk azkfile 2>&1)"
 }
 
-@test "require a containers system to execute" {
+@test "$test_label require a containers system to execute" {
   # mocks
   azk-agent-exec () {
     [[ "$@" == "exec /bin/bash" ]] && echo "azk-agent-exec" && exit 0
@@ -32,7 +32,7 @@ setup() {
   assert_output "azk-agent-exec"
 }
 
-@test "execute command if is finnaly" {
+@test "$test_label execute command if is finnaly" {
   create_file "${AZK_TEST_DIR}/${AZK_FILE_NAME}"
 
   run azk-exec --final "echo foobar"

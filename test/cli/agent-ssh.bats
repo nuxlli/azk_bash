@@ -2,7 +2,7 @@
 
 load ../test_helper
 
-@test "blank invocation" {
+@test "$test_label blank invocation" {
   #mocks
   ssh() { echo $@; }
   export -f ssh;
@@ -11,7 +11,7 @@ load ../test_helper
   assert_failure
 }
 
-@test "ssh connect" {
+@test "$test_label ssh connect" {
   #mocks
   ssh() { echo $@; }
   export -f ssh;
@@ -27,7 +27,7 @@ load ../test_helper
   assert_match '-o IdentitiesOnly=yes' "$output"
 }
 
-@test "execute a command" {
+@test "$test_label execute a command" {
   ssh() { echo $@; }
   export -f ssh;
   run azk-agent-ssh azk-agent echo 1

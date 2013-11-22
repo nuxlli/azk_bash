@@ -12,7 +12,7 @@ git_commit() {
   git commit --quiet --allow-empty -m "empty"
 }
 
-@test "default version" {
+@test "$test_label default version" {
   export AZK_ROOT="${AZK_TEST_DIR}/root"
   assert [ ! -e "$AZK_ROOT" ]
   run azk-version
@@ -20,7 +20,7 @@ git_commit() {
   [[ $output == "azk 0."* ]]
 }
 
-@test "reads version from git repo" {
+@test "$test_label reads version from git repo" {
   export AZK_ROOT="${AZK_TEST_DIR}/root"
   mkdir -p "$AZK_ROOT"
   cd "$AZK_ROOT"
@@ -36,7 +36,7 @@ git_commit() {
   [[ $output == "azk 0.4.1-2-g"* ]]
 }
 
-@test "prints default version if no tags in git repo" {
+@test "$test_label prints default version if no tags in git repo" {
   export AZK_ROOT="${AZK_TEST_DIR}/root"
   mkdir -p "$AZK_ROOT"
   cd "$AZK_ROOT"

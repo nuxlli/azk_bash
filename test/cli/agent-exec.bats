@@ -14,13 +14,13 @@ set_not_docker() {
   }; export -f type;
 }
 
-@test "required parameters" {
+@test "$test_label required parameters" {
   run azk-agent-exec
   assert_failure
   assert_match '^Usage:.*agent-exec' "${lines[0]}"
 }
 
-@test "docker exist? Execute a command" {
+@test "$test_label docker exist? Execute a command" {
   # mocks
   docker () { echo "Docker"; }
   azk () { echo $@; }
@@ -33,7 +33,7 @@ set_not_docker() {
   assert_output "exec --final $command"
 }
 
-@test "not have docker and is final execute" {
+@test "$test_label not have docker and is final execute" {
   # mocks
   set_not_docker
   run azk-agent-exec --final exec
@@ -41,7 +41,7 @@ set_not_docker() {
   assert_match '^azk: cannot find docker or agent' "${lines[0]}"
 }
 
-@test "invalid agent host" {
+@test "$test_label invalid agent host" {
   # mocks
   set_not_docker
   azk-agent-ssh() {
@@ -55,7 +55,7 @@ set_not_docker() {
   assert_match '^azk: cannot find docker or agent' "${lines[0]}"
 }
 
-@test "not docker and valid agent? Execute final command" {
+@test "$test_label not docker and valid agent? Execute final command" {
   set_not_docker
   azk-agent-ssh() {
     [[ "$@" == "azk-agent echo 1" ]] && return 0;
@@ -73,7 +73,7 @@ set_not_docker() {
   assert_output "azk-agent cd /home/core/azk/data/apps/project; /home/core/azk/libexec/azk echo --final any value"
 }
 
-@test "show erro if not valid azk-agent path" {
+@test "$test_label show erro if not valid azk-agent path" {
   set_not_docker
   azk-agent-ssh() {
     [[ "$@" == "azk-agent echo 1" ]] && return 0;

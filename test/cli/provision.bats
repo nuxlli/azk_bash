@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-test_label="cli/provision:"
+#test_label="cli/provision:"
 
 load ../test_helper
 

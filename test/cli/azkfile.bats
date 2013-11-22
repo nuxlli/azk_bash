@@ -7,19 +7,19 @@ setup() {
   cd "$AZK_TEST_DIR"
 }
 
-@test "does not exist $AZK_FILE_NAME" {
+@test "$test_label does not exist $AZK_FILE_NAME" {
   run azk azkfile
   assert_failure
   assert_output "azk: no such ${AZK_FILE_NAME} in current project"
 }
 
-@test "in current directory" {
+@test "$test_label in current directory" {
   create_file "$AZK_FILE_NAME"
   run azk-azkfile
   assert_success "${AZK_TEST_DIR}/${AZK_FILE_NAME}"
 }
 
-@test "in parent directory" {
+@test "$test_label in parent directory" {
   create_file "$AZK_FILE_NAME"
   mkdir -p project
   cd project
@@ -27,7 +27,7 @@ setup() {
   assert_success "${AZK_TEST_DIR}/${AZK_FILE_NAME}"
 }
 
-@test "topmost file has precedence" {
+@test "$test_label topmost file has precedence" {
   create_file "$AZK_FILE_NAME"
   create_file "project/${AZK_FILE_NAME}"
   cd project
@@ -35,7 +35,7 @@ setup() {
   assert_success "${AZK_TEST_DIR}/project/${AZK_FILE_NAME}"
 }
 
-@test "AZK_DIR has precedence over PWD" {
+@test "$test_label AZK_DIR has precedence over PWD" {
   create_file "widget/${AZK_FILE_NAME}"
   create_file "project/${AZK_FILE_NAME}"
   cd project
@@ -43,7 +43,7 @@ setup() {
   assert_success "${AZK_TEST_DIR}/widget/${AZK_FILE_NAME}"
 }
 
-@test "PWD is searched if AZK_DIR yields no results" {
+@test "$test_label PWD is searched if AZK_DIR yields no results" {
   mkdir -p "widget/blank"
   create_file "project/${AZK_FILE_NAME}"
   cd project
