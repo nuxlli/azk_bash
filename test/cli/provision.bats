@@ -17,6 +17,38 @@ git_commit() {
   command git commit --quiet --allow-empty -m "empty"
 }; export -f git_commit
 
+mock_git_clone() {
+  export AZK_DATA_PATH="${AZK_TEST_DIR}/data"
+  export test_clone_url="https://github.com/azukiapp/ruby-box"
+  export test_clone_path="${AZK_DATA_PATH}/boxes/azukiapp/ruby-box"
+  export test_fixture_path="$(fixtures ruby-box)"
+
+  git() {
+    clone_path="${AZK_DATA_PATH}/boxes/azukiapp/ruby-box"
+    mkdir -p "$(dirname "$clone_path")"
+    if [[ "$@" == "clone $test_clone_url $clone_path" ]]; then
+      cp -rf $test_fixture_path $clone_path
+      cd $clone_path
+      git init 1>/dev/null;
+      echo "Cloning into '$clone_path'..."
+      git add .
+      git commit --quiet -m "First version"
+      git tag v0.0.1
+      return 0;
+    fi
+    if [[ "$@" == "--git-dir=${clone_path}/.git remote update" ]]; then
+      cd $clone_path
+      echo "v0.0.2" > version
+      git add .
+      git commit --quiet -m "Second version"
+      git tag v0.0.2
+      echo "Fetching origin"
+      return 0;
+    fi
+    command git "$@";
+  }; export -f git
+}
+
 @test "$test_label required parameters" {
   run azk-provision
   assert_failure
@@ -80,38 +112,8 @@ git_commit() {
 
   run azk-provision --final box
   assert_failure
-  assert_equal "git-clone" "${lines[0]}"
+  assert_equal "azk: get box '${test_clone_url}#v0.0.1'..." "${lines[0]}"
   assert_equal "azk: could not get or update the box $test_clone_url repository" "${lines[1]}"
-}
-
-mock_git_clone() {
-  export AZK_DATA_PATH="${AZK_TEST_DIR}/data"
-  export test_clone_url="https://github.com/azukiapp/ruby-box"
-  export test_clone_path="${AZK_DATA_PATH}/boxes/azukiapp/ruby-box"
-  export test_fixture_path="$(fixtures ruby-box)"
-
-  git() {
-    clone_path="${AZK_DATA_PATH}/boxes/azukiapp/ruby-box"
-    mkdir -p "$(dirname "$clone_path")"
-    if [[ "$@" == "clone $test_clone_url $clone_path" ]]; then
-      cp -rf $test_fixture_path $clone_path
-      cd $clone_path
-      git init 1>/dev/null;
-      echo "Cloning into '$clone_path'..."
-      git add .
-      git commit --quiet -m "First version"
-      git tag v0.0.1
-      return 0;
-    fi
-    if [[ "$@" == "--git-dir=${clone_path}/.git remote update" ]]; then
-      cd $clone_path
-      git_commit
-      git tag v0.0.2
-      echo "Fetching origin"
-      return 0;
-    fi
-    command git "$@";
-  }; export -f git
 }
 
 @test "$test_label checkout to version" {
@@ -126,8 +128,8 @@ mock_git_clone() {
 
   run azk-provision --final box 2>&1
   assert_success
-  assert_match "Cloning into '$test_clone_path'..." "${lines[0]}"
-  assert_match "azk: Checkout in version 'v0.0.1'..." "${lines[1]}"
+  assert_match "azk: get box '$test_clone_url#v0.0.1'..." "${lines[0]}"
+  assert_match "azk: check for version 'v0.0.1'..." "${lines[1]}"
 
   run git --git-dir="${test_clone_path}/.git" branch
   assert_success
@@ -153,7 +155,6 @@ mock_git_clone() {
   cat $(fixtures full_azkfile.json) | sed 's:ruby-box#v0.0.1:ruby-box#v0.0.2:g' > $azk_file
   run azk-provision --final box
   assert_success
-  assert_match 'Fetching origin' "${lines[0]}"
-  assert_match "azk: Checkout in version 'v0.0.2'..." "${lines[1]}"
-  assert_match 'HEAD is now at .*\.\.\. empty' "${lines[2]}"
+  assert_match "azk: check for box updates in '${test_clone_url}#v0.0.2'..." "${lines[0]}"
+  assert_match "azk: check for version 'v0.0.2'..." "${lines[1]}"
 }
