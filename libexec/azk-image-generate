@@ -29,6 +29,7 @@ meta() {
   fi
 }
 
+# Build Dockerfile
 declare -a dockerfile
 
 meta platform ".platform"
@@ -44,7 +45,6 @@ for step in "${build_steps[@]}"; do
 done
 
 printf "%s\n" "${dockerfile[@]}" > ./Dockerfile
+
+# Run docker build and tag image
 docker build -q=true -rm -t $tag .
-
-#cat ./Dockerfile
-

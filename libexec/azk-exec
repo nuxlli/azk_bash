@@ -12,23 +12,28 @@ if [ "$1" = "--complete" ]; then
   exit
 fi
 
+# Save --final flag
 if [ "$1" = "--final" ]; then
   final=true; shift
 fi
 
-AZK_COMMAND="$1"
-
-if [ -z "$AZK_COMMAND" ]; then
+exec_command="$@"
+if [ -z "$exec_command" ]; then
   azk-help --usage exec >&2
   exit 1
 fi
 
-if [ ! $(azk-azkfile) ]; then
-  exit 1
+# requires azkfile
+azkfile=`azk-azkfile`
+
+# run only is --final flag
+if [ -z "$final" ]; then
+  exec azk-agent-exec exec $@
 fi
 
-if [ -z "$final" ]; then
-  azk-agent-exec exec $@
-else
-  eval "$@"
-fi
+# Check provision
+image=$(azk-image-provision --get-name app)
+azk-image-provision app
+
+# Run with docker
+docker run $image "$@"

@@ -20,22 +20,50 @@ setup() {
 
 @test "$test_label require a containers system to execute" {
   # mocks
-  azk-agent-exec () {
-    [[ "$@" == "exec /bin/bash" ]] && echo "azk-agent-exec" && exit 0
-    exit 1
-  }; export -f azk-agent-exec
+  exec () {
+    if [[ "$@" == "azk-agent-exec exec /bin/bash" ]]; then
+      echo "azk-agent-exec"
+      exit 0
+    fi
+    command exec $@
+  }; export -f exec
 
-  create_file "${AZK_TEST_DIR}/${AZK_FILE_NAME}"
+  echo '{}' > "$(create_file "${AZK_TEST_DIR}/${AZK_FILE_NAME}")"
 
   run azk-exec /bin/bash
+  echo $output
   assert_success
   assert_output "azk-agent-exec"
 }
 
-@test "$test_label execute command if is finnaly" {
-  create_file "${AZK_TEST_DIR}/${AZK_FILE_NAME}"
+@test "$test_label provision image-app" {
+  echo '{}' > "$(create_file "${AZK_TEST_DIR}/${AZK_FILE_NAME}")"
+
+  azk-image-provision() {
+    [[ "$@" == "--get-name app" ]] && echo "azk/apps:image-tag" && exit 0;
+    echo "image-provision $@"; exit 1;
+  }; export -f azk-image-provision
 
   run azk-exec --final "echo foobar"
-  assert_success
-  assert_output "foobar"
+  assert_failure
+  assert_output "image-provision app"
+}
+
+@test "$test_label run command in image-app" {
+  echo '{}' > "$(create_file "${AZK_TEST_DIR}/${AZK_FILE_NAME}")"
+
+  azk-image-provision() {
+    [[ "$@" == "--get-name app" ]] && echo "azk/apps:image-tag" && exit 0;
+    echo "image-provision $@"
+  }; export -f azk-image-provision
+
+  docker() {
+    echo "$@"
+    exit 10;
+  }; export -f docker;
+
+  run azk-exec --final '/bin/bash -c echo foobar'
+  assert_failure
+  assert_equal "image-provision app" "${lines[0]}"
+  assert_equal "run azk/apps:image-tag /bin/bash -c echo foobar" "${lines[1]}"
 }
