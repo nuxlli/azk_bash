@@ -76,6 +76,22 @@ mock_git_clone() {
   assert_output "azk-agent-exec provision box"
 }
 
+@test "$test_label unsupported image type" {
+  cp_fixture full_azkfile "${AZK_TEST_DIR}/project/azkfile.json"
+  cd "project"
+
+  run azk-provision --get-name __unsupported__
+  assert_failure "azk: '__unsupported__' unsupported image type"
+}
+
+@test "$test_label only return a image name" {
+  cp_fixture full_azkfile "${AZK_TEST_DIR}/project/azkfile.json"
+  cd "project"
+
+  run azk-provision --get-name box
+  assert_success "azk/boxes:azukiapp_test-box_v0.0.1"
+}
+
 # TODO: Reducing coupling test
 @test "$test_label return ok if the image for this box is already provisioned" {
   export box_name='azk/boxes:azukiapp_test-box_v0.0.1'

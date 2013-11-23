@@ -9,6 +9,7 @@ set -e
 
 image_type="$1"
 
+# TODO: Adding completions
 # requires parameter
 if [ -z "$image_type" ]; then
   azk-help --usage provision >&2
@@ -18,10 +19,19 @@ fi
 # requires azkfile
 azkfile=`azk-azkfile`
 
-# run only is --final command
-if [ ! "$1" = "--final" ]; then
-  exec azk-agent-exec provision $@
-fi; shift
+case "$1" in
+  # run only is --final command
+  --final)
+    shift
+    ;;
+  # Only return a image name?
+  --get-name)
+    get_name=true
+    shift
+    ;;
+  *)
+    exec azk-agent-exec provision $@
+esac
 
 # env
 AZK_DATA_PATH=${AZK_DATA_PATH:-`azk root`/data}
@@ -35,12 +45,21 @@ github() {
 }
 
 # TODO: Refectory to use a common functions
-azk.info() {
+azk.debug() {
+  color=$1; shift
   if [ -z "$TERM" ]; then
-    echo "azk: $1"
+    echo "azk: $@"
   else
-    echo "$(tput setaf 4)azk$(tput sgr0): $1"
+    echo "$(tput setaf $color)azk$(tput sgr0): $@"
   fi
+}
+
+azk.info() {
+  azk.debug 4 $@
+}
+
+azk.error() {
+  azk.debug 1 $@
 }
 
 clone_or_update() {
@@ -63,6 +82,12 @@ provision_box() {
   # Box information
   read -r user repo vers <<<"$(cat $azkfile | meta ".box" | github)"
   image="azk/boxes:${user}_${repo}_${vers}"
+
+  # Return image name
+  if [ ! -z "$get_name" ]; then
+    echo "$image"
+    exit 0;
+  fi
 
   # Search image
   azk.info "searching '$image'"
@@ -95,6 +120,10 @@ provision_box() {
 image_type="$1"
 case $image_type in
   box)
-    provision_box
+    eval "provision_$image_type"
+    ;;
+  *)
+    azk.error "'$image_type' unsupported image type" >&2
+    exit 1;
 esac
 
