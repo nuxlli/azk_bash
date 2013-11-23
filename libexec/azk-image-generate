@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+#
+# Summary: Performs the provisioning of specified image type
+#
+# Usage: azk image-generate <image-type> <script-path> <tag>
+
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+read -r type path tag <<<"$@"
+
+# requires parameter
+if [ -z "$type" -o -z "$path" -o -z "$tag" ]; then
+  azk-help --usage image-generate >&2
+  exit 1
+fi
+
+# requires azkfile
+cd $path; export AZK_DIR=$path
+azkfile=`azk-azkfile`
+
+meta() {
+  local var="$1"; shift
+  if [[ "$var" == "-a" ]]; then
+    local var="$1"; shift
+    eval "$var=($(cat $azkfile | jq -r "$@ | @sh"))"
+  else
+    eval "$var='$(cat $azkfile | jq -r "$@")'"
+  fi
+}
+
+declare -a dockerfile
+
+meta platform ".platform"
+dockerfile+=("FROM $platform")
+
+meta -a build_steps ".build"
+for step in "${build_steps[@]}"; do
+  if [[ "${step}" =~ ^#.* ]]; then
+    dockerfile+=("RUN echo '$step' \$'\n'")
+  else
+    dockerfile+=("RUN ${step}")
+  fi
+done
+
+printf "%s\n" "${dockerfile[@]}" > ./Dockerfile
+docker build -q=true -rm -t $tag .
+
+#cat ./Dockerfile
+
