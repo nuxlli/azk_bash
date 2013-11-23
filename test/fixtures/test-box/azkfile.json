@@ -1,0 +1,17 @@
+{
+  // Box base
+  "platform": "ubuntu:12.04",
+
+  // Build steps
+  "build": {
+    "step1": [
+      "echo step1"
+    ],
+
+    "step2": [
+      "echo step2.1",
+      "echo step2.2"
+    ]
+  }
+}
+

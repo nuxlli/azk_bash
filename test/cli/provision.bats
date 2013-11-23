@@ -19,12 +19,12 @@ git_commit() {
 
 mock_git_clone() {
   export AZK_DATA_PATH="${AZK_TEST_DIR}/data"
-  export test_clone_url="https://github.com/azukiapp/ruby-box"
-  export test_clone_path="${AZK_DATA_PATH}/boxes/azukiapp/ruby-box"
-  export test_fixture_path="$(fixtures ruby-box)"
+  export test_clone_url="https://github.com/azukiapp/test-box"
+  export test_clone_path="${AZK_DATA_PATH}/boxes/azukiapp/test-box"
+  export test_fixture_path="$(fixtures test-box)"
 
   git() {
-    clone_path="${AZK_DATA_PATH}/boxes/azukiapp/ruby-box"
+    clone_path="${AZK_DATA_PATH}/boxes/azukiapp/test-box"
     mkdir -p "$(dirname "$clone_path")"
     if [[ "$@" == "clone $test_clone_url $clone_path" ]]; then
       cp -rf $test_fixture_path $clone_path
@@ -77,7 +77,7 @@ mock_git_clone() {
 
 # TODO: Reducing coupling test
 @test "$test_label return ok if the image for this box is already provisioned" {
-  export box_name='azk/boxes:azukiapp_ruby-box_v0.0.1'
+  export box_name='azk/boxes:azukiapp_test-box_v0.0.1'
   cp_fixture full_azkfile "${AZK_TEST_DIR}/project/azkfile.json"
   cd "project"
 
@@ -97,14 +97,14 @@ mock_git_clone() {
   cp_fixture full_azkfile "${AZK_TEST_DIR}/project/azkfile.json"
   cd "project"
 
-  export test_clone_url="https://github.com/azukiapp/ruby-box"
+  export test_clone_url="https://github.com/azukiapp/test-box"
 
   azk-dcli() {
     echo '{}'; return 0;
   }; export -f azk-dcli
 
   git() {
-    clone_path="`azk root`/data/boxes/azukiapp/ruby-box"
+    clone_path="`azk root`/data/boxes/azukiapp/test-box"
     [[ "$@" == "clone $test_clone_url $clone_path" ]] && echo "git-clone" && return 1;
     [[ "$@" == "--git-dir=$clone_path/.git rev-parse" ]] && echo "git-rev-parse" && return 1;
     return 0;
@@ -124,6 +124,10 @@ mock_git_clone() {
     echo '{}'; return 0;
   }; export -f azk-dcli
 
+  azk-image-generate() {
+    return 0;
+  }; export -f azk-image-generate
+
   mock_git_clone
 
   run azk-provision --final box 2>&1
@@ -138,7 +142,7 @@ mock_git_clone() {
   assert_include values "${lines[0]}"
 }
 
-@test "$test_label if existe clone only checkout version" {
+@test "$test_label if exist clone, only checkout version" {
   azk_file="${AZK_TEST_DIR}/project/azkfile.json"
   cp_fixture full_azkfile $azk_file
   cd "project"
@@ -147,14 +151,38 @@ mock_git_clone() {
     echo '{}'; return 0;
   }; export -f azk-dcli
 
+  azk-image-generate() {
+    return 0;
+  }; export -f azk-image-generate
+
   mock_git_clone
 
   run azk-provision --final box
   assert_success
 
-  cat $(fixtures full_azkfile.json) | sed 's:ruby-box#v0.0.1:ruby-box#v0.0.2:g' > $azk_file
+  cat $(fixtures full_azkfile.json) | sed 's:test-box#v0.0.1:test-box#v0.0.2:g' > $azk_file
   run azk-provision --final box
   assert_success
   assert_match "azk: check for box updates in '${test_clone_url}#v0.0.2'..." "${lines[0]}"
   assert_match "azk: check for version 'v0.0.2'..." "${lines[1]}"
+}
+
+@test "$test_label at the end generate image" {
+  azk_file="${AZK_TEST_DIR}/project/azkfile.json"
+  cp_fixture full_azkfile $azk_file
+  cd "project"
+
+  azk-dcli() {
+    echo '{}'; return 0;
+  }; export -f azk-dcli
+
+  azk-image-generate() {
+    echo "$@"
+  }; export -f azk-image-generate
+
+  mock_git_clone
+
+  run azk-provision --final box
+  assert_success
+  assert_match "box $test_clone_path azk/boxes:azukiapp_test-box_v0.0.1" "${lines[2]}"
 }

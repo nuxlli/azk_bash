@@ -30,10 +30,6 @@ meta() {
   eval "$(cat <&0 | jq "$@ | @sh \"echo \(.)\"" | sed 's:^"::g' | sed 's:"$::g')"
 }
 
-azkfile_meta () {
-  cat $azkfile | meta "$@"
-}
-
 github() {
   exec sed -n 's:\([:alnum:]*\)/\([[:alnum:]|-]*\)#\(.*\):\1 \2 \3:p'
 }
@@ -57,9 +53,10 @@ clone_or_update() {
 # TODO: Add support generic git repo
 # TODO: Add support to relative path repository
 # TODO: Add suporte a laste version
+# TODO: Pull base image
 provision_box() {
   # Box information
-  read -r user repo vers <<<"$(azkfile_meta ".box" | github)"
+  read -r user repo vers <<<"$(cat $azkfile | meta ".box" | github)"
   image="azk/boxes:${user}_${repo}_${vers}"
 
   # Search image
@@ -79,11 +76,12 @@ provision_box() {
     exit 1;
   fi
 
-  # Checkout in version
+  # Checkout version
   azk.info "check for version '$vers'..."
   git --git-dir=$clone_path/.git checkout --quiet $vers # &>/dev/null
 
-  #exit 1;
+  # Generate image
+  azk-image-generate box $clone_path $image
 }
 
 image_type="$1"
