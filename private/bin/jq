@@ -31,8 +31,26 @@ case `uname -s` in
     exit 1;
 esac
 
+declare -a options
+
+while :; do
+  if echo "$1" | grep -q '\-[[:alpha:]]$'; then
+    options+=("$1")
+    shift
+  elif [ "$1" = "--arg" ]; then
+    options+=("$1 $2 $3")
+    shift 3
+  elif echo "$1" | grep -q '\-\-[[:alpha:]|\-]*$'; then
+    options+=("$1")
+    shift
+  else
+    break
+  fi
+done
+
+options="$(printf " %s" "${options[@]}")"
 private="$(azk root)/private"
-command="${private}/jq/$OSARCH '$@'"
+command="${private}/jq/${OSARCH}${options} '${@}'"
 
 # Check is a pipe or terminal
 # TODO: If last parameter is a file should not use remccoms3

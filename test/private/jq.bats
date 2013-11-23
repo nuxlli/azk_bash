@@ -20,6 +20,7 @@ mock_uname() {
   }; export -f exec
 
   run jq
+  echo $output
   assert_success
   assert_output "$(azk root)/private/jq/linux/jq_x86"
 }
@@ -73,4 +74,12 @@ mock_uname() {
   run echo $(echo "$result" | sed "s:\n: :g")
   assert_success
   assert_output "2 6 1 0"
+}
+
+@test "$test_label with options and filters" {
+  json='{ "array": ["option 1", "option 2"] }'
+  assert_equal "option 1" "$(echo $json | jq -r '.array | .[0]')"
+
+  eval "array=(`echo $json | jq -r '.array | @sh'`)"
+  assert_equal "option 1" "${array[0]}"
 }
