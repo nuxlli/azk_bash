@@ -7,6 +7,7 @@ load ../test_helper
 setup() {
   mkdir -p "$AZK_TEST_DIR"
   cd "$AZK_TEST_DIR"
+  export TERM=""
 
   mkdir -p "$HOME"
   git config --global user.name  "Tester"
@@ -90,10 +91,13 @@ mock_git_clone() {
   }; export -f azk-dcli
 
   run azk-provision --final box
-  assert_success "azk: this image-box $box_name already provisioned"
+  assert_success
+  assert_match "azk: searching '$box_name'" "${lines[0]}"
+  assert_match "azk: '$box_name' already provisioned" "${lines[1]}"
 }
 
 @test "$test_label call git to clone repository of box" {
+  export box_name='azk/boxes:azukiapp_test-box_v0.0.1'
   cp_fixture full_azkfile "${AZK_TEST_DIR}/project/azkfile.json"
   cd "project"
 
@@ -112,8 +116,9 @@ mock_git_clone() {
 
   run azk-provision --final box
   assert_failure
-  assert_equal "azk: get box '${test_clone_url}#v0.0.1'..." "${lines[0]}"
-  assert_equal "azk: could not get or update the box $test_clone_url repository" "${lines[1]}"
+  assert_equal "azk: '$box_name' not found" "${lines[1]}"
+  assert_equal "azk: get box '${test_clone_url}#v0.0.1'..." "${lines[2]}"
+  assert_equal "azk: could not get or update the box $test_clone_url repository" "${lines[3]}"
 }
 
 @test "$test_label checkout to version" {
@@ -132,8 +137,8 @@ mock_git_clone() {
 
   run azk-provision --final box 2>&1
   assert_success
-  assert_match "azk: get box '$test_clone_url#v0.0.1'..." "${lines[0]}"
-  assert_match "azk: check for version 'v0.0.1'..." "${lines[1]}"
+  assert_match "azk: get box '$test_clone_url#v0.0.1'..." "${lines[2]}"
+  assert_match "azk: check for version 'v0.0.1'..." "${lines[3]}"
 
   run git --git-dir="${test_clone_path}/.git" branch
   assert_success
@@ -163,8 +168,8 @@ mock_git_clone() {
   cat $(fixtures full_azkfile.json) | sed 's:test-box#v0.0.1:test-box#v0.0.2:g' > $azk_file
   run azk-provision --final box
   assert_success
-  assert_match "azk: check for box updates in '${test_clone_url}#v0.0.2'..." "${lines[0]}"
-  assert_match "azk: check for version 'v0.0.2'..." "${lines[1]}"
+  assert_match "azk: check for box updates in '${test_clone_url}#v0.0.2'..." "${lines[2]}"
+  assert_match "azk: check for version 'v0.0.2'..." "${lines[3]}"
 }
 
 @test "$test_label at the end generate image" {
@@ -184,5 +189,5 @@ mock_git_clone() {
 
   run azk-provision --final box
   assert_success
-  assert_match "box $test_clone_path azk/boxes:azukiapp_test-box_v0.0.1" "${lines[2]}"
+  assert_match "box $test_clone_path azk/boxes:azukiapp_test-box_v0.0.1" "${lines[4]}"
 }

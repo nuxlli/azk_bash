@@ -34,8 +34,13 @@ github() {
   exec sed -n 's:\([:alnum:]*\)/\([[:alnum:]|-]*\)#\(.*\):\1 \2 \3:p'
 }
 
+# TODO: Refectory to use a common functions
 azk.info() {
-  echo "azk: $1"
+  if [ -z "$TERM" ]; then
+    echo "azk: $1"
+  else
+    echo "$(tput setaf 4)azk$(tput sgr0): $1"
+  fi
 }
 
 clone_or_update() {
@@ -60,12 +65,15 @@ provision_box() {
   image="azk/boxes:${user}_${repo}_${vers}"
 
   # Search image
+  azk.info "searching '$image'"
   id=$(azk-dcli --final /images/$image/json 2>/dev/null || echo "{}")
   id=$(echo $id | meta ".id")
   if [ "${id}" != "null" ]; then
-    echo "azk: this image-box $image already provisioned" >&2
+    azk.info "'$image' already provisioned"
     exit 0
   fi
+
+  azk.info "'$image' not found"
 
   # Clone repository
      clone_url="https://github.com/$user/$repo"
