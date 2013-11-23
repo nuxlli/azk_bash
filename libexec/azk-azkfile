@@ -23,5 +23,11 @@ if [ -z "$file" ]; then
   echo "azk: no such azkfile.json in current project" >&2
   exit 1
 else
-  echo $file
+  # Valid azk file
+  if cat $file | jq "." 1>/dev/null; then
+    echo $file
+  else
+    echo "azk: '$file' is not valid json format" >&2
+    exit 1;
+  fi
 fi

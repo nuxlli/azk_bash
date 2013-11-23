@@ -63,8 +63,8 @@ mock_git_clone() {
 
 @test "$test_label requires exec in agent" {
   exec() {
-    echo "$@"
-    return 1;
+    [[ "$@" == "azk-agent-exec provision box" ]] && echo "$@" && return 1;
+    command exec $@;
   }
   export -f exec
 

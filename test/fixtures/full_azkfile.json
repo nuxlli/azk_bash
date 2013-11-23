@@ -41,15 +41,14 @@
   },
 
   // Build steps
-  "build": {
-    "install binary deps": [
+  "build": [
+    "# install binary deps",
       "apt-get update",
-      "apt-get install libxml2 curl"
-    ],
-    "install deps": [
+      "apt-get install libxml2 curl",
+
+    "# install deps",
       "bundle install"
-    ]
-  },
+  ],
 
   "services": {
     // Services box depedencies

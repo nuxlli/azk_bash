@@ -50,3 +50,15 @@ setup() {
   AZK_DIR="${AZK_TEST_DIR}/widget/blank" run azk-azkfile
   assert_success "${AZK_TEST_DIR}/project/${AZK_FILE_NAME}"
 }
+
+@test "$test_label valid azkfile.json" {
+  echo "{" > "${AZK_FILE_NAME}"
+  run azk-azkfile
+  assert_failure
+  assert_equal "parse error: Unfinished JSON term" "${lines[0]}"
+  assert_equal "azk: '${AZK_TEST_DIR}/${AZK_FILE_NAME}' is not valid json format" "${lines[1]}"
+
+  echo "{}" > azkfile.json
+  run azk-azkfile
+  assert_success "${AZK_TEST_DIR}/${AZK_FILE_NAME}"
+}

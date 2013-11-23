@@ -13,7 +13,7 @@ LOCAL_BANNER_SIZE:= $(shell echo ${LOCAL_BANNER} | wc | awk '{print $$3}')
 LOCAL_PRE_BANNER := $$(( (${COLUMNS} - ${LOCAL_BANNER_SIZE}) / 2 ))
 
 TEST_FILES := $(shell find test -name '*.bats' | xargs)
-RERUN_PATTERN := "{Makefile,bin/azk,**/*.bash,**/*.bats,private/**/*,libexec/**/*}"
+RERUN_PATTERN := "{Makefile,bin/azk,**/*.bash,**/*.bats,private/**/*,libexec/**/*,test/**/*azkfile.json}"
 
 ifeq ($(agent),true)
 	LOCAL := ""
