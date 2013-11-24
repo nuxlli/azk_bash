@@ -50,7 +50,7 @@ done
 
 options="$(printf " %s" "${options[@]}")"
 private="$(azk root)/private"
-command="${private}/jq/${OSARCH}${options} '${@}'"
+command="${private}/lib/jq/${OSARCH}${options} '${@}'"
 
 # Check is a pipe or terminal
 # TODO: If last parameter is a file should not use remccoms3

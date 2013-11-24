@@ -22,7 +22,7 @@ mock_uname() {
   run jq
   echo $output
   assert_success
-  assert_output "$(azk root)/private/jq/linux/jq_x86"
+  assert_output "$(azk root)/private/lib/jq/linux/jq_x86"
 }
 
 @test "$test_label call mac os x" {
@@ -34,7 +34,7 @@ mock_uname() {
 
   run jq
   assert_success
-  assert_output "$(azk root)/private/jq/jq_osx"
+  assert_output "$(azk root)/private/lib/jq/jq_osx"
 }
 
 @test "$test_label a system not supported" {

@@ -21,7 +21,7 @@ mock_uname() {
 
   run socat
   assert_success
-  assert_output "$(azk root)/private/socat/linux/socat_x86"
+  assert_output "$(azk root)/private/lib/socat/linux/socat_x86"
 }
 
 @test "$test_label call mac os x" {
@@ -33,7 +33,7 @@ mock_uname() {
 
   run socat
   assert_success
-  assert_output "$(azk root)/private/socat/socat_osx"
+  assert_output "$(azk root)/private/lib/socat/socat_osx"
 }
 
 @test "$test_label a system not supported" {

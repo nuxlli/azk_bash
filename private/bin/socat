@@ -29,7 +29,7 @@ esac
 
 # Get paths
 private="$(azk root)/private"
-command="${private}/socat/$OSARCH $@"
+command="${private}/lib/socat/$OSARCH $@"
 
 # Execute comand
 eval "exec $command"
