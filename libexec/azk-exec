@@ -17,6 +17,12 @@ if [ "$1" = "--final" ]; then
   final=true; shift
 fi
 
+# Interactive ?
+if [ "$1" = "-i" ]; then
+  export AZK_INTERACTIVE=true
+  shift
+fi
+
 exec_command="$@"
 if [ -z "$exec_command" ]; then
   azk-help --usage exec >&2
@@ -39,5 +45,9 @@ azk-provision app
 source "$(azk-root)/private/bin/common.sh"
 
 # Run with docker
+if [ ! -z "$AZK_INTERACTIVE" ]; then
+  interactive=" -t -i";
+fi
+
 azk.info "[%{green}exec%{reset}] running the command '$@'"
-eval "docker run -v=`pwd`:/app $image /bin/bash -c '$@'"
+eval "docker run -v=`pwd`:/app${interactive} $image /bin/bash -c '$@'"

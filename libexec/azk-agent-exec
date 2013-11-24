@@ -24,7 +24,13 @@ if [ -z "$azk_command" ]; then
 fi
 
 check_agent() {
-  [ $(azk-agent-ssh "${1}" "echo 1" &>/dev/null; echo $?) -eq 0 ] && return 0
+  local SAVE_AZK_INTERACTIVE="${AZK_INTERACTIVE}"
+  export AZK_INTERACTIVE=
+  if [ $(azk-agent-ssh "${1}" "echo 1" &>/dev/null; echo $?) -eq 0 ]; then
+    export AZK_INTERACTIVE="$SAVE_AZK_INTERACTIVE"
+    return 0;
+  fi
+  export AZK_INTERACTIVE="$SAVE_AZK_INTERACTIVE"
   return 1
 }
 
@@ -60,9 +66,20 @@ case `type -t docker` in
       exit 1
     fi
 
+    declare -a vars=(TERM AZK_DEBUG AZK_INTERACTIVE)
+    declare -a envs
+
+    for i in "${vars[@]}"; do
+      envs+=("export $i=$(eval "echo \$$i")")
+    done
+
+    envs=$(printf ' %s;' "${envs[@]}")
+
     # Run command in agent
     app_path=`resolve_app_agent_dir`
     command=$1; shift
-    azk-agent-ssh $host "export TERM=$TERM; export AZK_DEBUG=$AZK_DEBUG; cd $app_path; /home/core/azk/libexec/azk $command --final$(printf ' %q' "$@")"
+
+    azk_path="/home/core/azk/libexec/azk"
+    azk-agent-ssh $host "$envs cd $app_path; $azk_path $command --final$(printf ' %q' "$@")"
 esac
 

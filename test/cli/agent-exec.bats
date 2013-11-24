@@ -67,10 +67,16 @@ set_not_docker() {
   mkdir -p $AZK_TEST_DIR/project
   cd project
 
+  export TERM=term;
+  export AZK_INTERACTIVE=true;
+
+  local envs="export TERM=${TERM}; export AZK_DEBUG=$AZK_DEBUG; export AZK_INTERACTIVE=$AZK_INTERACTIVE"
+  local path="/home/core/azk"
+
   azk-agent-exec echo "any value"
   run azk-agent-exec echo "any value"
   assert_success
-  assert_output "azk-agent export TERM=$TERM; export AZK_DEBUG=$AZK_DEBUG; cd /home/core/azk/data/apps/project; /home/core/azk/libexec/azk echo --final any\\ value"
+  assert_output "azk-agent  $envs; cd $path/data/apps/project; $path/libexec/azk echo --final any\\ value"
 }
 
 @test "$test_label show erro if not valid azk-agent path" {

@@ -43,4 +43,8 @@ abs_dirname() {
 root="$(abs_dirname "$0")/.."
 identify="-i $root/private/etc/insecure_private_key"
 
-eval "ssh $user@$host $options $identify$(printf ' %q' "$@")"
+if [ ! -z $AZK_INTERACTIVE ]; then
+  interative=" -t"
+fi
+
+eval "ssh $user@$host $options ${identify}${interative}$(printf ' %q' "$@")"

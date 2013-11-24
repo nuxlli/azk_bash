@@ -69,3 +69,23 @@ setup() {
   assert_equal "azk: [exec] running the command '$command'" "${lines[1]}"
   assert_equal "run -v=`pwd`:/app azk/apps:image-tag /bin/bash -c $command" "${lines[2]}"
 }
+
+@test "$test_label support interative command" {
+  echo '{}' > "$(create_file "${AZK_TEST_DIR}/${AZK_FILE_NAME}")"
+
+  azk-provision() {
+    [[ "$@" == "--get-name app" ]] && echo "azk/apps:image-tag" && exit 0;
+    echo "azk-provision $@"
+  }; export -f azk-provision
+
+  docker() {
+    echo "$@"
+  }; export -f docker;
+
+  command="/bin/bash"
+  export AZK_INTERACTIVE=true
+  run azk-exec --final /bin/bash
+  echo $output
+  assert_success
+  assert_equal "run -v=`pwd`:/app -t -i azk/apps:image-tag /bin/bash -c $command" "${lines[2]}"
+}

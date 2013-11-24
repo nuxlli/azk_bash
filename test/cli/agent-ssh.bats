@@ -33,4 +33,9 @@ load ../test_helper
   run azk-agent-ssh azk-agent echo 1
   assert_success
   assert_match 'echo 1$' "$output"
+
+  export AZK_INTERACTIVE=true
+  run azk-agent-ssh azk-agent /bin/bash
+  assert_success
+  assert_match '-t /bin/bash$' "$output"
 }
