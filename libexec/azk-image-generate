@@ -32,8 +32,15 @@ meta() {
 # Build Dockerfile
 declare -a dockerfile
 
-meta platform ".platform"
-dockerfile+=("FROM $platform")
+# box?
+meta from ".platform"
+
+# app?
+if [ "$from" = "null" ]; then
+  from=$(azk-provision --get-name box)
+fi
+
+dockerfile+=("FROM $from")
 
 meta -a build_steps ".build"
 for step in "${build_steps[@]}"; do
