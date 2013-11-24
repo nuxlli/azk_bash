@@ -243,9 +243,15 @@ mock_project() {
 @test "$test_label at the end generate image-app" {
   export image_tag=$(mock_project)
   cd "project"
+  export image_box=$(azk-provision --get-name box)
 
   azk-dcli() {
-    echo '{}'; return 0;
+    if [[ "$@" == "--final /images/${image_box}/json" ]]; then
+      echo '{ "id": "image-box-id" }'
+    else
+      echo '{}'
+    fi
+    return 0
   }; export -f azk-dcli
 
   azk-image-generate() {
@@ -257,5 +263,6 @@ mock_project() {
   run azk-provision --final app
   assert_success
   assert_equal "azk: '$image_tag' not found" "${lines[1]}"
-  assert_match "app `pwd` $image_tag" "${lines[2]}"
+  assert_equal "azk: searching '${image_box}'" "${lines[2]}"
+  assert_equal "app `pwd` $image_tag" "${lines[4]}"
 }

@@ -44,9 +44,10 @@
   "build": [
     "# install binary deps",
       "apt-get update",
-      "apt-get install libxml2 curl",
+      "apt-get -y install libxml2 curl",
 
     "# install deps",
+      "gem install bundle",
       "bundle install"
   ],
 

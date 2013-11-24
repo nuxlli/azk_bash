@@ -74,14 +74,8 @@ clone_or_update() {
   return $?
 }
 
-# TODO: Add support generic git repo
-# TODO: Add support to relative path repository
-# TODO: Add suporte a laste version
-# TODO: Pull base image
-provision_box() {
-  # Image information
-  read -r user repo vers <<<"$(cat $azkfile | meta ".box" | github)"
-  image="azk/boxes:${user}_${repo}_${vers}"
+search_or_return_image() {
+  local image="$1"
 
   # Return image name
   if [ ! -z "$get_name" ]; then
@@ -89,20 +83,33 @@ provision_box() {
     exit 0;
   fi
 
-  # Search image
   azk.info "searching '$image'"
-  id=$(azk-dcli --final /images/$image/json 2>/dev/null || echo "{}")
+  local id=$(azk-dcli --final /images/$image/json 2>/dev/null || echo "{}")
   id=$(echo $id | meta ".id")
   if [ "${id}" != "null" ]; then
     azk.info "'$image' already provisioned"
+    [ "$2" == "--internal" ] && return 0;
     exit 0
   fi
-
   azk.info "'$image' not found"
+}
+
+# TODO: Add support generic git repo
+# TODO: Add support to relative path repository
+# TODO: Add suporte a laste version
+# TODO: Pull base image
+provision_box() {
+  # Image information
+  read -r user repo vers <<<"$(cat $azkfile | meta ".box" | github)"
+  local image="azk/boxes:${user}_${repo}_${vers}"
+
+  # Search image
+  search_or_return_image "$image" "$1"
+  [ "$1" == "--internal" ] && return 0;
 
   # Clone repository
-     clone_url="https://github.com/$user/$repo"
-    clone_path="${AZK_DATA_PATH}/boxes/$user/$repo"
+  local  clone_url="https://github.com/$user/$repo"
+  local clone_path="${AZK_DATA_PATH}/boxes/$user/$repo"
 
   if ! clone_or_update $clone_url $clone_path $vers ; then
     azk.info "could not get or update the box $clone_url repository"
@@ -122,22 +129,11 @@ provision_app() {
   local id="$(cat $azkfile | meta ".id")"
   local image="azk/apps:$id"
 
-  # Return image name
-  if [ ! -z "$get_name" ]; then
-    echo "$image"
-    exit 0;
-  fi
-
   # Search image
-  azk.info "searching '$image'"
-  id=$(azk-dcli --final /images/$image/json || echo "{}")
-  id=$(echo $id | meta ".id")
-  if [ "${id}" != "null" ]; then
-    azk.info "'$image' already provisioned"
-    exit 0
-  fi
+  search_or_return_image "$image"
 
-  azk.info "'$image' not found"
+  # Check box provision
+  provision_box --internal
 
   # Generate image
   azk-image-generate app `pwd` $image
