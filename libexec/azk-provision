@@ -46,11 +46,11 @@ github() {
 
 # TODO: Refectory to use a common functions
 azk.debug() {
-  color=$1; shift
+  local color=$1; shift
   if [ -z "$TERM" ]; then
-    echo "azk: $@"
+    echo "azk:$image_label $@"
   else
-    echo "$(tput setaf $color)azk$(tput sgr0): $@"
+    echo "$(tput setaf $color)azk$(tput sgr0):$image_label $@"
   fi
 }
 
@@ -68,16 +68,31 @@ clone_or_update() {
     azk.info "check for box updates in '$1#$3'..."
     git --git-dir="$2/.git" remote update >/dev/null
   else
-    echo "azk: get box '$1#$3'..."
+    azk.info "get box '$1#$3'..."
     git clone $1 $2 >/dev/null
   fi
   return $?
 }
 
-search_image() {
+search_return_image() {
   local image="$1"
+
+  # Return image name
+  if [ ! -z "$get_name" ]; then
+    echo "$image"
+    exit 0;
+  fi
+
+  azk.info "searching: '$image'"
   local id=$(azk-dcli --final /images/$image/json 2>/dev/null || echo "{}")
-  echo $(echo $id | meta ".id")
+  id=$(echo $id | meta ".id")
+
+  if [ "${id}" != "null" ]; then
+    azk.info "already provisioned: '$image'"
+    exit 0
+  fi
+
+  azk.info "not found: '$image'"
 }
 
 # TODO: Add support generic git repo
@@ -89,21 +104,8 @@ provision_box() {
   read -r user repo vers <<<"$(cat $azkfile | meta ".box" | github)"
   local image="azk/boxes:${user}_${repo}_${vers}"
 
-  # Return image name
-  if [ ! -z "$get_name" ]; then
-    echo "$image"
-    exit 0;
-  fi
-
   # Search image
-  azk.info "searching '$image'"
-  local id=$(search_image "$image")
-  if [ "${id}" != "null" ]; then
-    azk.info "'$image' already provisioned"
-    [ "$1" == "--internal" ] && return 0;
-    exit 0
-  fi
-  azk.info "'$image' not found"
+  search_return_image $image
 
   # Clone repository
   local  clone_url="https://github.com/$user/$repo"
@@ -127,23 +129,11 @@ provision_app() {
   local id="$(cat $azkfile | meta ".id")"
   local image="azk/apps:$id"
 
-  # Return image name
-  if [ ! -z "$get_name" ]; then
-    echo "$image"
-    exit 0;
-  fi
-
   # Search image
-  azk.info "searching '$image'"
-  local id=$(search_image "$image")
-  if [ "${id}" != "null" ]; then
-    azk.info "'$image' already provisioned"
-    exit 0
-  fi
-  azk.info "'$image' not found"
+  search_return_image $image
 
   # Check box provision
-  provision_box --internal
+  azk-provision --final box
 
   # Generate image
   azk-image-generate app `pwd` $image
@@ -152,6 +142,7 @@ provision_app() {
 image_type="$1"
 case $image_type in
   box|app)
+    image_label=" [image-${image_type}]"
     eval "provision_$image_type"
     ;;
   *)

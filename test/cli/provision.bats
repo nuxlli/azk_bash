@@ -108,8 +108,8 @@ mock_git_clone() {
 
   run azk-provision --final box
   assert_success
-  assert_match "azk: searching '$box_name'" "${lines[0]}"
-  assert_match "azk: '$box_name' already provisioned" "${lines[1]}"
+  assert_equal "azk: [image-box] searching: '$box_name'" "${lines[0]}"
+  assert_equal "azk: [image-box] already provisioned: '$box_name'" "${lines[1]}"
 }
 
 @test "$test_label call git to clone repository of box" {
@@ -132,9 +132,9 @@ mock_git_clone() {
 
   run azk-provision --final box
   assert_failure
-  assert_equal "azk: '$box_name' not found" "${lines[1]}"
-  assert_equal "azk: get box '${test_clone_url}#v0.0.1'..." "${lines[2]}"
-  assert_equal "azk: could not get or update the box $test_clone_url repository" "${lines[3]}"
+  assert_equal "azk: [image-box] not found: '$box_name'" "${lines[1]}"
+  assert_equal "azk: [image-box] get box '${test_clone_url}#v0.0.1'..." "${lines[2]}"
+  assert_equal "azk: [image-box] could not get or update the box $test_clone_url repository" "${lines[3]}"
 }
 
 @test "$test_label checkout to version" {
@@ -153,8 +153,8 @@ mock_git_clone() {
 
   run azk-provision --final box 2>&1
   assert_success
-  assert_match "azk: get box '$test_clone_url#v0.0.1'..." "${lines[2]}"
-  assert_match "azk: check for version 'v0.0.1'..." "${lines[3]}"
+  assert_equal "azk: [image-box] get box '$test_clone_url#v0.0.1'..." "${lines[2]}"
+  assert_equal "azk: [image-box] check for version 'v0.0.1'..." "${lines[3]}"
 
   run git --git-dir="${test_clone_path}/.git" branch
   assert_success
@@ -184,8 +184,8 @@ mock_git_clone() {
   cat $(fixtures full_azkfile.json) | sed 's:test-box#v0.0.1:test-box#v0.0.2:g' > $azk_file
   run azk-provision --final box
   assert_success
-  assert_match "azk: check for box updates in '${test_clone_url}#v0.0.2'..." "${lines[2]}"
-  assert_match "azk: check for version 'v0.0.2'..." "${lines[3]}"
+  assert_equal "azk: [image-box] check for box updates in '${test_clone_url}#v0.0.2'..." "${lines[2]}"
+  assert_equal "azk: [image-box] check for version 'v0.0.2'..." "${lines[3]}"
 }
 
 @test "$test_label at the end generate image-box" {
@@ -205,7 +205,7 @@ mock_git_clone() {
 
   run azk-provision --final box
   assert_success
-  assert_match "box $test_clone_path azk/boxes:azukiapp_test-box_v0.0.1" "${lines[4]}"
+  assert_equal "box $test_clone_path azk/boxes:azukiapp_test-box_v0.0.1" "${lines[4]}"
 }
 
 mock_project() {
@@ -236,8 +236,8 @@ mock_project() {
 
   run azk-provision --final app
   assert_success
-  assert_match "azk: searching '$image_tag'" "${lines[0]}"
-  assert_match "azk: '$image_tag' already provisioned" "${lines[1]}"
+  assert_equal "azk: [image-app] searching: '$image_tag'" "${lines[0]}"
+  assert_equal "azk: [image-app] already provisioned: '$image_tag'" "${lines[1]}"
 }
 
 @test "$test_label at the end generate image-app" {
@@ -262,7 +262,7 @@ mock_project() {
 
   run azk-provision --final app
   assert_success
-  assert_equal "azk: '$image_tag' not found" "${lines[1]}"
-  assert_equal "azk: searching '${image_box}'" "${lines[2]}"
+  assert_equal "azk: [image-app] not found: '$image_tag'" "${lines[1]}"
+  assert_equal "azk: [image-box] searching: '${image_box}'" "${lines[2]}"
   assert_equal "app `pwd` $image_tag" "${lines[4]}"
 }
