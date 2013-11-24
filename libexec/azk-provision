@@ -74,24 +74,10 @@ clone_or_update() {
   return $?
 }
 
-search_or_return_image() {
+search_image() {
   local image="$1"
-
-  # Return image name
-  if [ ! -z "$get_name" ]; then
-    echo "$image"
-    exit 0;
-  fi
-
-  azk.info "searching '$image'"
   local id=$(azk-dcli --final /images/$image/json 2>/dev/null || echo "{}")
-  id=$(echo $id | meta ".id")
-  if [ "${id}" != "null" ]; then
-    azk.info "'$image' already provisioned"
-    [ "$2" == "--internal" ] && return 0;
-    exit 0
-  fi
-  azk.info "'$image' not found"
+  echo $(echo $id | meta ".id")
 }
 
 # TODO: Add support generic git repo
@@ -103,9 +89,21 @@ provision_box() {
   read -r user repo vers <<<"$(cat $azkfile | meta ".box" | github)"
   local image="azk/boxes:${user}_${repo}_${vers}"
 
+  # Return image name
+  if [ ! -z "$get_name" ]; then
+    echo "$image"
+    exit 0;
+  fi
+
   # Search image
-  search_or_return_image "$image" "$1"
-  [ "$1" == "--internal" ] && return 0;
+  azk.info "searching '$image'"
+  local id=$(search_image "$image")
+  if [ "${id}" != "null" ]; then
+    azk.info "'$image' already provisioned"
+    [ "$1" == "--internal" ] && return 0;
+    exit 0
+  fi
+  azk.info "'$image' not found"
 
   # Clone repository
   local  clone_url="https://github.com/$user/$repo"
@@ -129,8 +127,20 @@ provision_app() {
   local id="$(cat $azkfile | meta ".id")"
   local image="azk/apps:$id"
 
+  # Return image name
+  if [ ! -z "$get_name" ]; then
+    echo "$image"
+    exit 0;
+  fi
+
   # Search image
-  search_or_return_image "$image"
+  azk.info "searching '$image'"
+  local id=$(search_image "$image")
+  if [ "${id}" != "null" ]; then
+    azk.info "'$image' already provisioned"
+    exit 0
+  fi
+  azk.info "'$image' not found"
 
   # Check box provision
   provision_box --internal
