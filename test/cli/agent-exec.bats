@@ -70,7 +70,7 @@ set_not_docker() {
   azk-agent-exec echo "any value"
   run azk-agent-exec echo "any value"
   assert_success
-  assert_output "azk-agent export TERM=$TERM; cd /home/core/azk/data/apps/project; /home/core/azk/libexec/azk echo --final any value"
+  assert_output "azk-agent export TERM=$TERM; export AZK_DEBUG=$AZK_DEBUG; cd /home/core/azk/data/apps/project; /home/core/azk/libexec/azk echo --final any\\ value"
 }
 
 @test "$test_label show erro if not valid azk-agent path" {

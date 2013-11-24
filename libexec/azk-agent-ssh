@@ -43,4 +43,4 @@ abs_dirname() {
 root="$(abs_dirname "$0")/.."
 identify="-i $root/private/etc/insecure_private_key"
 
-ssh $user@$host $options $identify $@
+eval "ssh $user@$host $options $identify$(printf ' %q' "$@")"
