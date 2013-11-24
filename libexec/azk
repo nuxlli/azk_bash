@@ -37,6 +37,7 @@ abs_dirname() {
 }
 
 defaul_root=$(abs_dirname "$(abs_dirname $BASH_SOURCE)/../")
+source "${defaul_root}/private/bin/common.sh"
 
 if [ -z "${AZK_ROOT}" ]; then
   AZK_ROOT="${defaul_root}"
@@ -49,7 +50,7 @@ if [ -z "${AZK_DIR}" ]; then
   AZK_DIR="$(pwd)"
 else
   cd "$AZK_DIR" 2>/dev/null || {
-    echo "azk: cannot change working directory to \`$AZK_DIR'"
+    azk.error  "cannot change working directory to \`$AZK_DIR'"
     exit 1
   } >&2
   AZK_DIR="$(pwd)"
@@ -88,7 +89,7 @@ case "$command" in
 * )
   command_path="$(command -v "azk-$command" || true)"
   if [ -z "$command_path" ]; then
-    echo "azk: no such command \`$command'" >&2
+    azk.error "no such command \`$command'"
     exit 1
   fi
 

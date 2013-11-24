@@ -35,5 +35,9 @@ fi
 image=$(azk-provision --get-name app)
 azk-provision app
 
+# Tools
+source "$(azk-root)/private/bin/common.sh"
+
 # Run with docker
+azk.info "[%{green}exec%{reset}] running the command '$@'"
 eval "docker run -v=`pwd`:/app $image /bin/bash -c '$@'"

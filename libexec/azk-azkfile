@@ -19,15 +19,18 @@ file=$(
   [ "$AZK_DIR" = "$PWD" ] || find_local_file "$PWD"
 )
 
+# Tools
+source "$(azk-root)/private/bin/common.sh"
+
 if [ -z "$file" ]; then
-  echo "azk: no such azkfile.json in current project" >&2
+  azk.error "no such '%{yellow}azkfile.json%{reset}' in current project"
   exit 1
 else
   # Valid azk file
   if cat $file | jq "." 1>/dev/null; then
     echo $file
   else
-    echo "azk: '$file' is not valid json format" >&2
+    azk.error "'%{yellow}$file%{reset}' is not valid json format"
     exit 1;
   fi
 fi

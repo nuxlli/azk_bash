@@ -12,11 +12,14 @@ if [ ! "$1" = "--final" ]; then
   exec azk-agent-exec dcli $@
 fi; shift
 
+# Tools
+source "$(azk-root)/private/bin/common.sh"
+
 # Docker socket
 AZK_DOCKER_SOCKET=${AZK_DOCKER_SOCKET:-/var/run/docker.sock}
 socket=$(find $AZK_DOCKER_SOCKET -type s 2>/dev/null | head -n 1)
 if [ -z "$socket" ]; then
-  echo "azk: requires docker socket is open" >&2
+  azk.error "requires docker socket is open"
   exit 1;
 fi
 
@@ -37,7 +40,7 @@ IFS=$'\r\n' response=($(echo "${response_raw}"))
 IFS=' ' first=($(echo "${response[0]%%$'\r'}"))
 
 if [ ! "${first[1]}" -eq 200 ]; then
-  echo "azk: error to request ${path} => ${first[1]}" >&2
+  azk.error "error to request ${path} => ${first[1]}"
   exit 1;
 fi
 

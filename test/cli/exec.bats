@@ -62,8 +62,10 @@ setup() {
     exit 10;
   }; export -f docker;
 
-  run azk-exec --final /bin/bash -c \"echo foobar\"
+  command="/bin/bash -c \"echo foobar\""
+  run azk-exec --final $command
   assert_failure
   assert_equal "azk-provision app" "${lines[0]}"
-  assert_equal "run -v=`pwd`:/app azk/apps:image-tag /bin/bash -c /bin/bash -c \"echo foobar\"" "${lines[1]}"
+  assert_equal "azk: [exec] running the command '$command'" "${lines[1]}"
+  assert_equal "run -v=`pwd`:/app azk/apps:image-tag /bin/bash -c $command" "${lines[2]}"
 }

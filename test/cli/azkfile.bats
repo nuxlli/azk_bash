@@ -10,7 +10,7 @@ setup() {
 @test "$test_label does not exist $AZK_FILE_NAME" {
   run azk azkfile
   assert_failure
-  assert_output "azk: no such ${AZK_FILE_NAME} in current project"
+  assert_output "azk: no such '${AZK_FILE_NAME}' in current project"
 }
 
 @test "$test_label in current directory" {

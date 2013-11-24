@@ -40,9 +40,12 @@ resolve_app_agent_dir () {
   [[ "$path" != "$(pwd)" ]] && echo $base$path && return 0
 
   # Not valid app path
-  echo "azk: not in azk applications path" >&2
+  azk.error "not in azk applications path"
   return 1
 }
+
+# Tools
+source "$(azk-root)/private/bin/common.sh"
 
 # find docker command
 case `type -t docker` in
@@ -53,7 +56,7 @@ case `type -t docker` in
   *)
      host=${AZK_AGENT_HOST:-azk-agent}
     if [ ! -z "$final" ] || [ "$(check_agent $host; echo $?)" -eq 1 ]; then
-      echo "azk: cannot find docker or agent" >&2
+      azk.error "cannot find docker or agent"
       exit 1
     fi
 

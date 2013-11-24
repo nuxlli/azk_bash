@@ -34,7 +34,8 @@ case "$1" in
 esac
 
 # env
-AZK_DATA_PATH=${AZK_DATA_PATH:-`azk root`/data}
+__AZK_ROOT=`azk root`
+AZK_DATA_PATH=${AZK_DATA_PATH:-${__AZK_ROOT}/data}
 
 meta() {
   eval "$(cat <&0 | jq "$@ | @sh \"echo \(.)\"" | sed 's:^"::g' | sed 's:"$::g')"
@@ -44,23 +45,8 @@ github() {
   exec sed -n 's:\([:alnum:]*\)/\([[:alnum:]|-]*\)#\(.*\):\1 \2 \3:p'
 }
 
-# TODO: Refectory to use a common functions
-azk.debug() {
-  local color=$1; shift
-  if [ -z "$TERM" ]; then
-    echo "azk:$image_label $@"
-  else
-    echo "$(tput setaf $color)azk$(tput sgr0):$image_label $@"
-  fi
-}
-
-azk.info() {
-  azk.debug 4 $@
-}
-
-azk.error() {
-  azk.debug 1 $@
-}
+# Tools
+source "${__AZK_ROOT}/private/bin/common.sh"
 
 clone_or_update() {
   is_repo=$(git --git-dir="$2/.git" rev-parse &>/dev/null; echo $?)
@@ -139,14 +125,21 @@ provision_app() {
   azk-image-generate app `pwd` $image
 }
 
+label_color() {
+  echo "$@" | sed "
+    s:app:%{yellow}:g;
+    s:box:%{magenta}:g;
+  "
+}
+
 image_type="$1"
 case $image_type in
   box|app)
-    image_label=" [image-${image_type}]"
+    AZK_DEBUG_PREFIX=" [$(label_color "$image_type")image-${image_type}%{reset}]"
     eval "provision_$image_type"
     ;;
   *)
-    azk.error "'$image_type' unsupported image type" >&2
+    azk.error "'$image_type' unsupported image type"
     exit 1;
 esac
 
