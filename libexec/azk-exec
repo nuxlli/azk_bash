@@ -28,12 +28,12 @@ azkfile=`azk-azkfile`
 
 # run only is --final flag
 if [ -z "$final" ]; then
-  exec azk-agent-exec exec $@
+  exec azk-agent-exec exec "$@"
 fi
 
 # Check provision
-image=$(azk-image-provision --get-name app)
-azk-image-provision app
+image=$(azk-provision --get-name app)
+azk-provision app
 
 # Run with docker
-docker run $image "$@"
+eval "docker run -v=`pwd`:/app $image /bin/bash -c '$@'"

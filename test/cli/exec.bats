@@ -39,31 +39,31 @@ setup() {
 @test "$test_label provision image-app" {
   echo '{}' > "$(create_file "${AZK_TEST_DIR}/${AZK_FILE_NAME}")"
 
-  azk-image-provision() {
+  azk-provision() {
     [[ "$@" == "--get-name app" ]] && echo "azk/apps:image-tag" && exit 0;
-    echo "image-provision $@"; exit 1;
-  }; export -f azk-image-provision
+    echo "azk-provision $@"; exit 1;
+  }; export -f azk-provision
 
   run azk-exec --final "echo foobar"
   assert_failure
-  assert_output "image-provision app"
+  assert_output "azk-provision app"
 }
 
 @test "$test_label run command in image-app" {
   echo '{}' > "$(create_file "${AZK_TEST_DIR}/${AZK_FILE_NAME}")"
 
-  azk-image-provision() {
+  azk-provision() {
     [[ "$@" == "--get-name app" ]] && echo "azk/apps:image-tag" && exit 0;
-    echo "image-provision $@"
-  }; export -f azk-image-provision
+    echo "azk-provision $@"
+  }; export -f azk-provision
 
   docker() {
     echo "$@"
     exit 10;
   }; export -f docker;
 
-  run azk-exec --final '/bin/bash -c echo foobar'
+  run azk-exec --final /bin/bash -c \"echo foobar\"
   assert_failure
-  assert_equal "image-provision app" "${lines[0]}"
-  assert_equal "run azk/apps:image-tag /bin/bash -c echo foobar" "${lines[1]}"
+  assert_equal "azk-provision app" "${lines[0]}"
+  assert_equal "run -v=`pwd`:/app azk/apps:image-tag /bin/bash -c /bin/bash -c \"echo foobar\"" "${lines[1]}"
 }
