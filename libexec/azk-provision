@@ -79,7 +79,7 @@ clone_or_update() {
 # TODO: Add suporte a laste version
 # TODO: Pull base image
 provision_box() {
-  # Box information
+  # Image information
   read -r user repo vers <<<"$(cat $azkfile | meta ".box" | github)"
   image="azk/boxes:${user}_${repo}_${vers}"
 
@@ -117,9 +117,35 @@ provision_box() {
   azk-image-generate box $clone_path $image
 }
 
+provision_app() {
+  # Image information
+  local id="$(cat $azkfile | meta ".id")"
+  local image="azk/apps:$id"
+
+  # Return image name
+  if [ ! -z "$get_name" ]; then
+    echo "$image"
+    exit 0;
+  fi
+
+  # Search image
+  azk.info "searching '$image'"
+  id=$(azk-dcli --final /images/$image/json || echo "{}")
+  id=$(echo $id | meta ".id")
+  if [ "${id}" != "null" ]; then
+    azk.info "'$image' already provisioned"
+    exit 0
+  fi
+
+  azk.info "'$image' not found"
+
+  # Generate image
+  azk-image-generate app `pwd` $image
+}
+
 image_type="$1"
 case $image_type in
-  box)
+  box|app)
     eval "provision_$image_type"
     ;;
   *)

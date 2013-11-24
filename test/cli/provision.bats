@@ -84,7 +84,7 @@ mock_git_clone() {
   assert_failure "azk: '__unsupported__' unsupported image type"
 }
 
-@test "$test_label only return a image name" {
+@test "$test_label only return a image name for box type" {
   cp_fixture full_azkfile "${AZK_TEST_DIR}/project/azkfile.json"
   cd "project"
 
@@ -188,7 +188,7 @@ mock_git_clone() {
   assert_match "azk: check for version 'v0.0.2'..." "${lines[3]}"
 }
 
-@test "$test_label at the end generate image" {
+@test "$test_label at the end generate image-box" {
   azk_file="${AZK_TEST_DIR}/project/azkfile.json"
   cp_fixture full_azkfile $azk_file
   cd "project"
@@ -206,4 +206,56 @@ mock_git_clone() {
   run azk-provision --final box
   assert_success
   assert_match "box $test_clone_path azk/boxes:azukiapp_test-box_v0.0.1" "${lines[4]}"
+}
+
+mock_project() {
+  local azkfile="${AZK_TEST_DIR}/project/azkfile.json"
+  cp_fixture full_azkfile $azkfile
+  local id=$(cat $azkfile | jq -r ".id")
+  echo "azk/apps:$id"
+}
+
+@test "$test_label only return a image name for app type" {
+  local image=$(mock_project)
+  cd "project"
+
+  run azk-provision --get-name app
+  assert_success "$image"
+}
+
+@test "$test_label search image-app in docker" {
+  export image_tag=$(mock_project)
+  cd "project"
+
+  azk-dcli() {
+    if [[ "$@" == "--final /images/$image_tag/json" ]]; then
+      echo '{ "id": "image-docker-id" }'
+      exit 0
+    fi
+  }; export -f azk-dcli
+
+  run azk-provision --final app
+  assert_success
+  assert_match "azk: searching '$image_tag'" "${lines[0]}"
+  assert_match "azk: '$image_tag' already provisioned" "${lines[1]}"
+}
+
+@test "$test_label at the end generate image-app" {
+  export image_tag=$(mock_project)
+  cd "project"
+
+  azk-dcli() {
+    echo '{}'; return 0;
+  }; export -f azk-dcli
+
+  azk-image-generate() {
+    echo "$@"
+  }; export -f azk-image-generate
+
+  mock_git_clone
+
+  run azk-provision --final app
+  assert_success
+  assert_equal "azk: '$image_tag' not found" "${lines[1]}"
+  assert_match "app `pwd` $image_tag" "${lines[2]}"
 }
