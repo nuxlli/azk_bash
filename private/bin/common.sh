@@ -44,3 +44,10 @@ azk.info() {
 azk.error() {
   azk.debug error "$@"
 }
+
+azk.render() {
+eval "cat <<EOF
+$(echo -en "$1")
+EOF
+" 2> /dev/null
+}

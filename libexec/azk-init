@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+#
+# Summary: Initializes a project by adding the file azkfile.json
+#
+# Usage: azk init <path> [--box boxname]
+
+# TODO: Add the question box
+# TODO: Alternative uuidgen in linux /proc/sys/kernel/random/uuid
+# TODO: Adding Dockerfile to .gitignore
+
+make_id() {
+  uuidgen | sed 's:\-::g' | awk '{print tolower($0)}'
+}
+
+# Only id generator
+if [ "$1" = "--id" ]; then
+  echo `make_id`;
+  exit 0;
+fi
+
+# Tools
+root=`azk-root`
+source $root/private/bin/common.sh
+
+# Default boxes
+box_ruby="azukiapp/ruby-box#stable"
+box_node="azukiapp/node-box#stable"
+box_elixir="azukiapp/elixir-box#stable"
+
+looking_box_suggestions() {
+  # Path not exist? no suggestion.
+  [ ! -d "$path" ] && return 0;
+
+  # Ruby
+  [ -f "$path/Gemfile" ] && echo $box_ruby && return 0;
+
+  # Node
+  [ -f "$path/package.json" ] && echo $box_node && return 0;
+
+  # Elixir
+  [ -f "$path/mix.exs" ] && echo $box_elixir && return 0;
+}
+
+# Defaults
+  id=$(make_id)
+ tpl=`azk-root`/private/etc/default_azkfile.json
+path="."
+
+# Path
+if [[ ( ! -z "$1" ) && ( ! "$1" =~ ^--[a-zA-Z0-9]*$ ) ]]; then
+  path="$1"; shift
+fi
+
+# Box
+if [ "$1" == "--box" ]; then
+  box="$2"; shift 2;
+fi
+
+file="$path/azkfile.json"
+if [ -f "$file" ]; then
+  azk.error "[init] '$file' already exists"
+  exit 1;
+fi
+
+default_box="$(looking_box_suggestions)"
+default_box="${default_box:-azukiapp/[box]#[version]}"
+
+if [ -z "$box" ]; then
+  read -p "Enter a box (${default_box}): " box
+  box=${box:-$default_box}
+fi
+
+# Generate file
+[ ! "$path" == "." ] && mkdir -p $path
+azk.render "$(cat $tpl)" 2>/dev/null > $file
+azk.info "[init] '$file' generated"

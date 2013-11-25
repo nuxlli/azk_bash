@@ -1,13 +1,10 @@
 #!/usr/bin/env bats
 
-#test_label="cli/provision:"
-
 load ../test_helper
 
 setup() {
   mkdir -p "$AZK_TEST_DIR"
   cd "$AZK_TEST_DIR"
-  export TERM=""
 
   mkdir -p "$HOME"
   git config --global user.name  "Tester"
