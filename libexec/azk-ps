@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+#
+# Summary: Displays a information about all of application process
+#
+# Usage: azk ps
+
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+# Provide azk completions
+if [ "$1" = "--complete" ]; then
+  exit
+fi
+
+# Save --final flag
+if [ "$1" = "--final" ]; then
+  final=true; shift
+fi
+
+# requires azkfile
+azkfile=`azk-azkfile`
+
+# run only is --final flag
+if [ -z "$final" ]; then
+  exec azk-agent-exec ps "$@"
+fi
+
+# image-app id
+image_id=$(azk-provision --get-name app)
+
+# Tools
+source "$(azk-root)/private/bin/common.sh"
+
+metrics_memory() {
+  cat "/sys/fs/cgroup/memory/lxc/${1}/memory.max_usage_in_bytes"
+}
+
+awk_format='{ printf "%%{blue}%-13s%%{reset} %%{yellow}%-8s%%{reset} %%{cyan}%-14.14s%%{reset} %%{green}%s%%{reset}", $1, $2, $3, $4}'
+azk.escape "$(echo \
+  "Azk id**Memory**Up time**Command" | \
+  awk -F '**' "$awk_format" \
+)" $'\n---'
+
+filter=". | map(select(.Image == \"$image_id\"))"
+processes="$(azk-dcli /containers/json | jq "$filter")"
+num=$(jq ". | length" <<< $processes)
+
+for i in $(seq 0 $(( $num - 1 ))); do
+  process=$(jq ".[$i]" <<< $processes )
+  id="$(echo $process | jq -r '.Id')"
+  command="$(echo $process | jq -r '.Command')"
+  status="$(echo $process | jq -r '.Status')"
+
+  memory=$(( $(metrics_memory $id) / 1024 ))
+  short_pid="$(printf "%.12s " "$id")"
+
+  azk.escape "$(echo \
+    "$short_pid**${memory}kb**$status**$command" | \
+    awk -F '**' "$awk_format" \
+  )"
+done
