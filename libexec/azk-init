@@ -9,7 +9,7 @@
 # TODO: Adding Dockerfile to .gitignore
 
 make_id() {
-  uuidgen | sed 's:\-::g' | awk '{print tolower($0)}'
+  printf "%.15s" "$(uuidgen | sed 's:\-::g' | awk '{print tolower($0)}')"
 }
 
 # Only id generator
