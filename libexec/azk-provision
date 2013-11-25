@@ -88,7 +88,7 @@ search_return_image() {
 provision_box() {
   # Image information
   read -r user repo vers <<<"$(cat $azkfile | meta ".box" | github)"
-  local image="azk/boxes:${user}_${repo}_${vers}"
+  local image="azk/boxes/${user}_${repo}:${vers}"
 
   # Search image
   search_return_image $image
