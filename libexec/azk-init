@@ -66,7 +66,8 @@ default_box="$(looking_box_suggestions)"
 default_box="${default_box:-azukiapp/[box]#[version]}"
 
 if [ -z "$box" ]; then
-  read -p "Enter a box (${default_box}): " box
+  msg="$(azk.escape "Enter a box (default: %{yellow}${default_box}%{reset}): ")"
+  read -p "$msg" box
   box=${box:-$default_box}
 fi
 

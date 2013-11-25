@@ -17,7 +17,7 @@ azk.tput() {
   eval "tput $@"
 }
 
-azk.color.escape() {
+azk.escape() {
   echo "$@" | sed "
     s/%{red}/$(azk.tput setaf 1)/g;
     s/%{green}/$(azk.tput setaf 2)/g;
@@ -34,7 +34,7 @@ azk.color.escape() {
 azk.debug() {
   local nivel="$1"; shift
   local color="$(azk.debug.color "$nivel")"
-  echo "$(azk.color.escape "${color}azk%{reset}:$AZK_DEBUG_PREFIX $@")" >&2
+  echo "$(azk.escape "${color}azk%{reset}:$AZK_DEBUG_PREFIX $@")" >&2
 }
 
 azk.info() {
