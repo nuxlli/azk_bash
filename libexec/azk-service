@@ -30,12 +30,27 @@ source "$(azk-root)/private/bin/common.sh"
 
 # Jq filters
 qry_default='to_entries | map(select(.value.default == true)) | .[0].key // ""'
-qry_to_kill='.[0:%s] | to_entries | [.[].value.Id] | @sh'
+qry_to_kill='.[0:%s] | to_entries | ["\(.[].value.Id) \(.[].value.Ports[0].PublicPort)"] | @sh'
 qry_proc_name='. | map(select(.Names[0] | contains("/service:%s:")))'
+qry_alias='.envs.%s.alias | @sh'
 
 not_services() {
   azk.error "[service] services not defined"
   exit 1
+}
+
+balancer.add() {
+  azk.redis rpush "$1" "$2" >/dev/null
+}
+
+balancer.init() {
+  if [ -z "$(azk.redis lrange $1 0 0)" ]; then
+    balancer.add $1 $2
+  fi
+}
+
+balancer.remove() {
+  azk.redis lrem "$1" 0 "$2" >/dev/null
 }
 
 # TODO: Separar isso em um outro processo
@@ -64,23 +79,52 @@ process_command() {
     [ "$number" -lt 0 ] && number=0
     azk.info "[service] scale to ${actual} to ${number} instances"
 
+    local app_id="$(cat $azkfile | jq -r ".id")"
+    local query="$(printf "$qry_alias" "dev")"
+    eval "local alias=($(cat $azkfile | jq -r "$query"))"
+
+    for a in "${alias[@]}"; do
+      balancer.init "frontend:${a}" "$app_id"
+    done
+
     if [ "$actual" -gt "$number" ]; then
       local query=$(printf "$qry_to_kill" $(( $actual - $number )))
       eval "local to_kill=($(echo "$containers" | jq -r "$query"))"
       echo -ne $(azk.escape "Kill: %{red}")
-      for dci in "${to_kill[@]}"; do
+      for to in "${to_kill[@]}"; do
+        read -r dci port <<< "$to"
+
+        # Remove from balancer
+        for a in "${alias[@]}"; do
+          balancer.remove "frontend:${a}" "http://192.168.50.4:$port"
+        done
+
+        # kill
         docker kill $dci > /dev/null
         echo -en "-"
       done
     else
       local image=$(azk-provision --get-name app)
       local port="8080"
-      cmd="/bin/bash -c '$(printf ' %q' $cmd) &> /app/log/${service}.log'"
+      cmd="/bin/bash -c '$cmd &> /app/log/${service}.log'"
       cmd="docker run -d -e PORT="${port}" -w=/app -p 8080 -name="%s" -v=`pwd`:/app $image $cmd"
 
       echo -ne $(azk.escape "Up: %{green}")
       for i in $(seq 1 $(( $number - $actual ))); do
-        eval "$(printf "${cmd}" "/service:$service:$(azk.uuid 15)") > /dev/null"
+        container_name="/service:$service:$(azk.uuid 15)"
+        container_cid="$(eval "$(printf "${cmd}" "$container_name")")"
+
+        if [ -z "$container_cid" ]; then
+          azk.error "[service] fail to up service"
+          exit 1;
+        fi
+
+        # Balancer
+        container_port=$(docker port "$container_name" $port | awk -F : '{print $2}')
+        for a in "${alias[@]}"; do
+          balancer.add "frontend:${a}" "http://192.168.50.4:$container_port"
+        done
+
         echo -en "+"
       done
     fi
