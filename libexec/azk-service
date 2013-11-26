@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+#
+# Summary: Manage services related to current application
+#
+# Usage: azk service <command> [arg1..arg2..argN]
+
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+# Provide azk completions
+if [ "$1" = "--complete" ]; then
+  exit
+fi
+
+# Save --final flag
+if [ "$1" = "--final" ]; then
+  final=true; shift
+fi
+
+# requires azkfile
+azkfile=`azk-azkfile`
+
+# run only is --final flag
+if [ -z "$final" ]; then
+  exec azk-agent-exec service "$@"
+fi
+
+# Tools
+source "$(azk-root)/private/bin/common.sh"
+
+# Jq filters
+qry_default='to_entries | map(select(.value.default == true)) | .[0].key // ""'
+qry_proc_name='. | map(select(.Names[0] | contains("/service:%s:")))'
+
+not_services() {
+  azk.error "[service] services not defined"
+  exit 1
+}
+
+# TODO: Separar isso em um outro processo
+
+process_command() {
+  local command="$1"; shift
+  local service="$1"; shift
+  local cmd=$(echo $services | jq -r ".${service}.command")
+
+  if [ "$cmd" = "null" ]; then
+    azk.error "[service] service '$service' not defined"
+    exit 1
+  fi
+
+  # Filter containers by service
+  local query="$(printf "$qry_proc_name" "$service")"
+  local containers="$(echo $containers | jq -r $query)"
+  local actual=$(echo $containers | jq '. | length')
+
+  echo $cmd
+
+  local image=$(azk-provision --get-name app)
+  local name="/service:$service:$(azk.uuid 15)"
+  local port="8080"
+  cmd="/bin/bash -c '$(printf ' %q' $cmd) &> /app/log/${service}.log'"
+  eval "docker run -d -e PORT="${port}" -w=/app -p 8080 -name="$name" -v=`pwd`:/app $image $cmd"
+}
+
+# Command
+service_command="$1"; shift
+case $service_command in
+  start)
+    # Services data
+    services=$(cat $azkfile | jq -r '.services')
+
+    [ "$services" = "null" ] && not_services
+
+    # Default services
+    service=$(echo $services | jq -r "${qry_default}")
+    service="${service:-:all:}"
+
+    # Service passed
+    if [[ ( ! -z "$1" ) && ( ! "$1" =~ ^--?[a-zA-Z0-9]{1,}$ ) ]]; then
+      service="$1"
+      shift
+    fi
+
+    # Get containers in execution for this app
+    containers="$(azk.docker_containers)"
+
+    # all services
+    if [ "$service" = ":all:" ]; then
+      azk.error "[service] :all: not supported yet"
+    else
+      process_command "$service_command" "$service" "$@"
+    fi
+    ;;
+  *)
+    [ ! -z "$service_command" ] && azk.error "'$service_command' unsupported command"
+    azk-help --usage exec >&2
+    exit 1;
+esac
