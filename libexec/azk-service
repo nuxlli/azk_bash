@@ -30,6 +30,7 @@ source "$(azk-root)/private/bin/common.sh"
 
 # Jq filters
 qry_default='to_entries | map(select(.value.default == true)) | .[0].key // ""'
+qry_to_kill='.[0:%s] | to_entries | [.[].value.Id] | @sh'
 qry_proc_name='. | map(select(.Names[0] | contains("/service:%s:")))'
 
 not_services() {
@@ -54,19 +55,44 @@ process_command() {
   local containers="$(echo $containers | jq -r $query)"
   local actual=$(echo $containers | jq '. | length')
 
-  echo $cmd
+  local number=1
+  if [[ ( "$1" == "-n" ) && ( ! -z "$2" ) ]]; then
+    number=$2
+  fi
 
-  local image=$(azk-provision --get-name app)
-  local name="/service:$service:$(azk.uuid 15)"
-  local port="8080"
-  cmd="/bin/bash -c '$(printf ' %q' $cmd) &> /app/log/${service}.log'"
-  eval "docker run -d -e PORT="${port}" -w=/app -p 8080 -name="$name" -v=`pwd`:/app $image $cmd"
+  if [ ! "$actual" -eq "$number" ]; then
+    [ "$number" -lt 0 ] && number=0
+    azk.info "[service] scale to ${actual} to ${number} instances"
+
+    if [ "$actual" -gt "$number" ]; then
+      local query=$(printf "$qry_to_kill" $(( $actual - $number )))
+      eval "local to_kill=($(echo "$containers" | jq -r "$query"))"
+      echo -ne $(azk.escape "Kill: %{red}")
+      for dci in "${to_kill[@]}"; do
+        docker kill $dci > /dev/null
+        echo -en "-"
+      done
+    else
+      local image=$(azk-provision --get-name app)
+      local port="8080"
+      cmd="/bin/bash -c '$(printf ' %q' $cmd) &> /app/log/${service}.log'"
+      cmd="docker run -d -e PORT="${port}" -w=/app -p 8080 -name="%s" -v=`pwd`:/app $image $cmd"
+
+      echo -ne $(azk.escape "Up: %{green}")
+      for i in $(seq 1 $(( $number - $actual ))); do
+        eval "$(printf "${cmd}" "/service:$service:$(azk.uuid 15)") > /dev/null"
+        echo -en "+"
+      done
+    fi
+
+    azk.escape "%{reset}"
+  fi
 }
 
 # Command
 service_command="$1"; shift
 case $service_command in
-  start)
+  start|scale|status)
     # Services data
     services=$(cat $azkfile | jq -r '.services')
 
