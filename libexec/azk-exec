@@ -50,4 +50,4 @@ if [ ! -z "$AZK_INTERACTIVE" ]; then
 fi
 
 azk.info "[%{green}exec%{reset}] running the command '$@'"
-eval "docker run -v=`pwd`:/app${interactive} $image /bin/bash -c '$@'"
+eval "docker run -e HOME=/app -w=/app -name=exec:$(azk.uuid 15) -v=`pwd`:/app${interactive} $image /bin/bash -c '$@'"

@@ -62,12 +62,16 @@ setup() {
     exit 10;
   }; export -f docker;
 
+  uuidgen() {
+    echo "c2f181a350a040a"
+  }; export -f uuidgen;
+
   command="/bin/bash -c \"echo foobar\""
   run azk-exec --final $command
   assert_failure
   assert_equal "azk-provision app" "${lines[0]}"
   assert_equal "azk: [exec] running the command '$command'" "${lines[1]}"
-  assert_equal "run -v=`pwd`:/app azk/apps:image-tag /bin/bash -c $command" "${lines[2]}"
+  assert_equal "run -e HOME=/app -w=/app -name=exec:$(uuidgen) -v=`pwd`:/app azk/apps:image-tag /bin/bash -c $command" "${lines[2]}"
 }
 
 @test "$test_label support interative command" {
@@ -82,10 +86,14 @@ setup() {
     echo "$@"
   }; export -f docker;
 
+  uuidgen() {
+    echo "c2f181a350a040a"
+  }; export -f uuidgen;
+
   command="/bin/bash"
   export AZK_INTERACTIVE=true
   run azk-exec --final /bin/bash
   echo $output
   assert_success
-  assert_equal "run -v=`pwd`:/app -t -i azk/apps:image-tag /bin/bash -c $command" "${lines[2]}"
+  assert_equal "run -e HOME=/app -w=/app -name=exec:$(uuidgen) -v=`pwd`:/app -t -i azk/apps:image-tag /bin/bash -c $command" "${lines[2]}"
 }
