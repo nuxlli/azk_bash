@@ -40,3 +40,37 @@ source `azk root`/private/bin/common.sh
   echo $output
   assert_success "[tput setaf 4]azk[tput sgr0]: info [tput setaf 1]log[tput sgr0]"
 }
+
+@test "$test_label check is a parameter" {
+  run azk.is_parameter
+  assert_failure
+
+  run azk.is_parameter "notparameter"
+  assert_failure
+
+  run azk.is_parameter "--"
+  assert_failure
+
+  run azk.is_parameter "-"
+  assert_failure
+
+  run azk.is_parameter "-a"
+  assert_success
+
+  run azk.is_parameter "--a"
+  assert_success
+}
+
+@test "$test_label generate a uudi" {
+  local uuid="883af6ecf05f40379a6dfa9fd6faf995"
+
+  uuidgen() {
+    echo "883AF6EC-F05F-4037-9A6D-FA9FD6FAF995";
+  }; export -f uuidgen;
+
+  run azk.uuid
+  assert_success "$uuid"
+
+  run azk.uuid 15
+  assert_success "$(printf "%.15s" "$uuid")"
+}

@@ -51,3 +51,24 @@ $(echo -en "$1")
 EOF
 " 2> /dev/null
 }
+
+azk.is_parameter() {
+  # zero length not is parameter
+  [ -z "$1" ] && return 1;
+
+  # -[alpha] --[alpha] is parameter
+  [[ "$1" =~ ^--?[a-zA-Z0-9]{1,}$ ]] && return 0;
+
+  return 1;
+}
+
+azk.docker_containers() {
+  local image=$(azk-provision --get-name app)
+  local filter=". | map(select(.Image == \"$image\"))"
+  azk-dcli /containers/json | jq -r "$filter"
+}
+
+azk.uuid() {
+  local size="${1:-32}"
+  printf "%.${size}s" "$(uuidgen | sed 's:\-::g' | awk '{print tolower($0)}')"
+}
