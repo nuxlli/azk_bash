@@ -8,19 +8,17 @@
 # TODO: Alternative uuidgen in linux /proc/sys/kernel/random/uuid
 # TODO: Adding Dockerfile to .gitignore
 
-make_id() {
-  printf "%.15s" "$(uuidgen | sed 's:\-::g' | awk '{print tolower($0)}')"
-}
+# Tools
+root=`azk-root`
+source $root/private/bin/common.sh
+
+make_id() { azk.uuid 15; }
 
 # Only id generator
 if [ "$1" = "--id" ]; then
   echo `make_id`;
   exit 0;
 fi
-
-# Tools
-root=`azk-root`
-source $root/private/bin/common.sh
 
 # Default boxes
 box_ruby="azukiapp/ruby-box#stable"
