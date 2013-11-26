@@ -72,3 +72,12 @@ azk.uuid() {
   local size="${1:-32}"
   printf "%.${size}s" "$(uuidgen | sed 's:\-::g' | awk '{print tolower($0)}')"
 }
+
+azk.redis() {
+  exec 6<>/dev/tcp/azk-agent/49229
+  if [ $? -ne 0 ]; then
+    azk.error "[redis] dont connect to redis"
+    exit 1
+  fi
+  redis-client "$@"
+}
