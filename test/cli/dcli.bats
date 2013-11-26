@@ -29,7 +29,7 @@ mock_docker() {
   mock_file="${AZK_TEST_DIR}/mock_docker"
   mkdir -p $(dirname "${mock_file}")
   cat > "${mock_file}" <<'EOF'
-    if [[ "${headers[0]}" == "GET /images/json HTTP/1.1" ]]; then
+    if [[ "${headers[0]}" == "GET /images/json HTTP/1.0" ]]; then
       echo -en "HTTP/1.1 200 OK\r\n\r\n[]"
       exit 0;
     else
