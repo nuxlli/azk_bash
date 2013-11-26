@@ -25,9 +25,6 @@ if [ -z "$final" ]; then
   exec azk-agent-exec ps "$@"
 fi
 
-# image-app id
-image_id=$(azk-provision --get-name app)
-
 # Tools
 source "$(azk-root)/private/bin/common.sh"
 
@@ -41,8 +38,7 @@ azk.escape "$(echo \
   awk -F '**' "$awk_format" \
 )" $'\n---'
 
-filter=". | map(select(.Image == \"$image_id\"))"
-processes="$(azk-dcli /containers/json | jq "$filter")"
+processes="$(azk.docker_containers)"
 num=$(jq ". | length" <<< $processes)
 
 for i in $(seq 0 $(( $num - 1 ))); do
