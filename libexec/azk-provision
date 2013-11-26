@@ -69,16 +69,18 @@ search_return_image() {
     exit 0;
   fi
 
-  azk.info "searching: '$image'"
-  local id=$(azk-dcli --final /images/$image/json 2>/dev/null || echo "{}")
-  id=$(echo $id | meta ".id")
+  if [ -z "$force" ]; then
+    azk.info "searching: '$image'"
+    local id=$(azk-dcli --final /images/$image/json 2>/dev/null || echo "{}")
+    id=$(echo $id | meta ".id")
 
-  if [ "${id}" != "null" ]; then
-    azk.info "already provisioned: '$image'"
-    exit 0
+    if [ "${id}" != "null" ]; then
+      azk.info "already provisioned: '$image'"
+      exit 0
+    fi
+
+    azk.info "not found: '$image'"
   fi
-
-  azk.info "not found: '$image'"
 }
 
 # TODO: Add support generic git repo
@@ -119,7 +121,7 @@ provision_app() {
   search_return_image $image
 
   # Check box provision
-  azk-provision --final box
+  azk-provision --final box $([ ! -z "$force" ] && echo "--force")
 
   # Generate image
   azk-image-generate app `pwd` $image
@@ -135,6 +137,13 @@ label_color() {
 image_type="$1"
 case $image_type in
   box|app)
+    shift;
+
+    if [ "$1" = "--force" ]; then
+      force=true;
+      shift;
+    fi
+
     AZK_DEBUG_PREFIX=" [$(label_color "$image_type")image-${image_type}%{reset}]"
     eval "provision_$image_type"
     ;;
