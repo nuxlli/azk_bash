@@ -74,7 +74,7 @@ azk.uuid() {
 }
 
 azk.redis() {
-  exec 6<>/dev/tcp/azk-agent/49229
+  exec 6<>/dev/tcp/127.0.0.1/49229
   if [ $? -ne 0 ]; then
     azk.error "[redis] dont connect to redis"
     exit 1
