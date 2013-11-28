@@ -51,6 +51,9 @@ for step in "${build_steps[@]}"; do
   fi
 done
 
+# Force unique image
+dockerfile+=("RUN echo '$tag' > /etc/azk_image")
+
 printf "%s\n" "${dockerfile[@]}" > ./Dockerfile
 
 # Run docker build and tag image
