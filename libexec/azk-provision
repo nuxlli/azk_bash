@@ -113,9 +113,12 @@ provision_box() {
 }
 
 provision_app() {
+  # Adding env?
+  [ "$AZK_ENV" = "prod" ] && add_env="prod/";
+
   # Image information
   local id="$(cat $azkfile | meta ".id")"
-  local image="azk/apps:$id"
+  local image="azk/apps/${add_env}${id}"
 
   # Search image
   search_return_image $image

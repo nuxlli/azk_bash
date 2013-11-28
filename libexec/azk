@@ -78,6 +78,13 @@ shopt -u nullglob
 # Private extensions
 export PATH="${AZK_ROOT}/private/bin:${PATH}"
 
+export AZK_ENV="${AZK_ENV:-dev}"
+if [ "$1" == "prod" ]; then
+  azk.info "production detected, sync files..."
+  export AZK_ENV="prod"
+  shift
+fi
+
 command="$1"
 case "$command" in
 "" | "-h" | "--help" )

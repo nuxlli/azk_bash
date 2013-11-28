@@ -80,7 +80,7 @@ process_command() {
     azk.info "[service] scale to ${actual} to ${number} instances"
 
     local app_id="$(cat $azkfile | jq -r ".id")"
-    local query="$(printf "$qry_alias" "dev")"
+    local query="$(printf "$qry_alias" "$AZK_ENV")"
     eval "local alias=($(cat $azkfile | jq -r "$query"))"
 
     for a in "${alias[@]}"; do
@@ -107,12 +107,15 @@ process_command() {
       local image=$(azk-provision --get-name app)
       local port="8080"
       cmd="/bin/bash -c '$cmd &> /app/log/${service}.log'"
-      cmd="docker run -d -e PORT="${port}" -w=/app -p 8080 -name="%s" -v=`pwd`:/app $image $cmd"
+      cmd="docker run -d -e AZK_ID="%s" -e PORT="${port}" -w=/app -p 8080 -name="%s" -v=`pwd`:/app $image $cmd"
+
+      # Provision image
+      azk-provision app
 
       echo -ne $(azk.escape "Up: %{green}")
       for i in $(seq 1 $(( $number - $actual ))); do
         container_name="/service:$service:$(azk.uuid 15)"
-        container_cid="$(eval "$(printf "${cmd}" "$container_name")")"
+        container_cid="$(eval "$(printf "${cmd}" "$container_name" "$container_name")")"
 
         if [ -z "$container_cid" ]; then
           azk.error "[service] fail to up service"
@@ -127,6 +130,9 @@ process_command() {
 
         echo -en "+"
       done
+
+      echo ""
+      azk.info "%{reset}[service] Access:$(printf ' http://%s' "${alias[@]}")"
     fi
 
     azk.escape "%{reset}"

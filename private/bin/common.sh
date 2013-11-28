@@ -64,7 +64,7 @@ azk.is_parameter() {
 
 azk.docker_containers() {
   local image=$(azk-provision --get-name app)
-  local filter=". | map(select(.Image == \"$image\"))"
+  local filter=". | map(select(.Image | contains(\"$image\")))"
   azk-dcli /containers/json | jq -r "$filter"
 }
 
