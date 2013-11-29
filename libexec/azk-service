@@ -30,7 +30,7 @@ source "$(azk-root)/private/bin/common.sh"
 
 # Jq filters
 qry_default='to_entries | map(select(.value.default == true)) | .[0].key // ""'
-qry_to_kill='.[0:%s] | to_entries | ["\(.[].value.Id) \(.[].value.Ports[0].PublicPort)"] | @sh'
+qry_to_kill='.[0:%s] | map("\(.Id) \(.Ports[0].PublicPort)") | @sh'
 qry_proc_name='. | map(select(.Names[0] | contains("/service:%s:")))'
 qry_alias='.envs.%s.alias | @sh'
 
@@ -79,9 +79,9 @@ process_command() {
     [ "$number" -lt 0 ] && number=0
     azk.info "[service] scale to ${actual} to ${number} instances"
 
-    local app_id="$(cat $azkfile | jq -r ".id")"
+    local app_id="$(cat $azkfile | jq -c -r ".id")"
     local query="$(printf "$qry_alias" "$AZK_ENV")"
-    eval "local alias=($(cat $azkfile | jq -r "$query"))"
+    eval "local alias=($(cat $azkfile | jq -c -r "$query"))"
 
     for a in "${alias[@]}"; do
       balancer.init "frontend:${a}" "$app_id"
@@ -142,9 +142,9 @@ process_command() {
 # Command
 service_command="$1"; shift
 case $service_command in
-  start|scale|status)
+  start|scale|stop)
     # Services data
-    services=$(cat $azkfile | jq -r '.services')
+    services=$(cat $azkfile | jq -c -r '.services')
 
     [ "$services" = "null" ] && not_services
 
@@ -161,11 +161,17 @@ case $service_command in
     # Get containers in execution for this app
     containers="$(azk.docker_containers)"
 
+    # Options
+    if [ "$service_command" = "stop" ]; then
+      service_command="scale"
+      extra="-n 0"
+    fi
+
     # all services
     if [ "$service" = ":all:" ]; then
       azk.error "[service] :all: not supported yet"
     else
-      process_command "$service_command" "$service" "$@"
+      process_command "$service_command" "$service" "$@" $extra
     fi
     ;;
   *)
