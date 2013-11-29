@@ -34,7 +34,11 @@ esac
 declare -a options
 
 while :; do
-  if echo "$1" | grep -q '\-[[:alpha:]]$'; then
+  # Clear?
+  if [ "$1" == "-c" ]; then
+    clear=true;
+    shift
+  elif echo "$1" | grep -q '\-[[:alpha:]]$'; then
     options+=("$1")
     shift
   elif [ "$1" = "--arg" ]; then
@@ -54,7 +58,7 @@ command="${private}/lib/jq/${OSARCH}${options} '${@}'"
 
 # Check is a pipe or terminal
 # TODO: If last parameter is a file should not use remccoms3
-if [ -z "$1" -o "$1" == "--version" ]; then
+if [ -z "$1" -o "$1" == "--version" -o -z "$clear" ]; then
   eval "exec $command"
 else
   eval "exec \"${private}/bin/remccoms3\" | $command"

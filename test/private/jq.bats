@@ -62,7 +62,7 @@ mock_uname() {
 }
 
 @test "$test_label clean comments" {
-  result=$(echo '{ "foo": "bar" /* comment */ }' | jq ".foo")
+  result=$(echo '{ "foo": "bar" /* comment */ }' | jq -c ".foo")
 
   run echo "$result"
   assert_success
@@ -82,4 +82,21 @@ mock_uname() {
 
   eval "array=(`echo $json | jq -r '.array | @sh'`)"
   assert_equal "option 1" "${array[0]}"
+}
+
+@test "$test_label option to remove comments is optional" {
+   json_line='[ 1, 2 ] // Comment line'
+  json_multi='[ 1, /* Long comment \n */ 2]'
+
+  run eval "echo '$json_line' | jq -r '. | @sh'"
+  assert_failure
+
+  run eval "echo '$json_line' | jq -c -r '. | @sh'"
+  assert_success "1 2"
+
+  run eval "echo '$json_multi' | jq -r '. | @sh'"
+  assert_failure
+
+  run eval "echo '$json_multi' | jq --raw-output -c '. | @sh'"
+  assert_success "1 2"
 }
