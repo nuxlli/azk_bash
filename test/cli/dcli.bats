@@ -29,8 +29,27 @@ mock_docker() {
   mock_file="${AZK_TEST_DIR}/mock_docker"
   mkdir -p $(dirname "${mock_file}")
   cat > "${mock_file}" <<'EOF'
-    if [[ "${headers[0]}" == "GET /images/json HTTP/1.0" ]]; then
+    if [[ "${headers[0]}" == "GET /images/json HTTP/1.1" ]]; then
       echo -en "HTTP/1.1 200 OK\r\n\r\n[]"
+      exit 0;
+    else
+      echo "Error"
+      exit 1;
+    fi
+EOF
+  mock_docker "${mock_file}"
+  sleep 0.1;
+
+  run azk-dcli --final /images/json
+  assert_success '[]'
+}
+
+@test "$test_label support chucked encoding" {
+  mock_file="${AZK_TEST_DIR}/mock_docker"
+  mkdir -p $(dirname "${mock_file}")
+  cat > "${mock_file}" <<'EOF'
+    if [[ "${headers[0]}" == "GET /images/json HTTP/1.1" ]]; then
+      echo -en "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n2\r\n[]\r\n0\r\n\r\n"
       exit 0;
     else
       echo "Error"
@@ -52,5 +71,5 @@ EOF
   sleep 0.1;
 
   run azk-dcli --final /images
-  assert_failure 'azk: error to request /images => 404'
+  assert_failure 'azk: error to request /images => 404 Not Found'
 }

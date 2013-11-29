@@ -28,20 +28,27 @@ path="$1"
 
 # Headers request
 declare -a request
-request+=("GET ${path} HTTP/1.0")
+request+=("GET ${path} HTTP/1.1")
 request+=('Host: localhost:8080')
 
 # Format headers request
 printf -v request '%s\r\n' "${request[@]}"
 
 # Request
-response_raw="$(echo -en "$request" '\r\n\n' | socat unix:$socket stdio)"
-IFS=$'\r\n' response=($(echo "${response_raw}"))
-IFS=' ' first=($(echo "${response[0]%%$'\r'}"))
+response_raw="$(echo -en "$request" '\r\n\n' | socat -t20 unix:$socket stdio)"
 
-if [ ! "${first[1]}" -eq 200 ]; then
-  azk.error "error to request ${path} => ${first[1]}"
+# Code returned
+read -r _proto code desc <<<$(echo "$response_raw" | head -n 1)
+if [ ! "$code" -eq 200 ]; then
+  desc="${desc%%$'\r'}"
+  azk.error "error to request ${path} => ${code} ${desc}"
   exit 1;
 fi
 
-echo "${response[${#response[@]} - 1]}"
+if [ -z "$(echo "$response_raw" | grep "Transfer-Encoding: chunked")" ]; then
+  body="$(echo "$response_raw" | tail -n 1)"
+else
+  body="$(echo "$response_raw" | tail -n 3 | head -n 1)"
+fi
+
+echo "${body%%$'\r'}"
