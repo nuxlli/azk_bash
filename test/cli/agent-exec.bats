@@ -70,7 +70,7 @@ set_not_docker() {
   export TERM=term;
   export AZK_INTERACTIVE=true;
 
-  local envs="export TERM=${TERM}; export AZK_DEBUG=$AZK_DEBUG; export AZK_INTERACTIVE=$AZK_INTERACTIVE"
+  local envs="export TERM=${TERM}; export AZK_DEBUG=$AZK_DEBUG; export AZK_INTERACTIVE=$AZK_INTERACTIVE; export AZK_ENV=$AZK_ENV"
   local path="/home/core/azk"
 
   azk-agent-exec echo "any value"

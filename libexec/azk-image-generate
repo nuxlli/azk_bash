@@ -23,9 +23,9 @@ meta() {
   local var="$1"; shift
   if [[ "$var" == "-a" ]]; then
     local var="$1"; shift
-    eval "$var=($(cat $azkfile | jq -r "$@ | @sh"))"
+    eval "$var=($(cat $azkfile | jq -c -r "$@ | @sh"))"
   else
-    eval "$var='$(cat $azkfile | jq -r "$@")'"
+    eval "$var='$(cat $azkfile | jq -c -r "$@")'"
   fi
 }
 

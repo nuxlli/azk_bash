@@ -48,13 +48,13 @@ setup() {
 
 @test "$test_label confirm default box" {
   echo "" | azk-init
-  box="$(cat azkfile.json | jq -r ".box")"
+  box="$(cat azkfile.json | jq -c -r ".box")"
   assert_equal "azukiapp/[box]#[version]" "$box"
 }
 
 @test "$test_label enter a box" {
   echo "azukiapp/ruby-box#0.0.1" | azk-init
-  box="$(cat azkfile.json | jq -r ".box")"
+  box="$(cat azkfile.json | jq -c -r ".box")"
   assert_equal "azukiapp/ruby-box#0.0.1" "$box"
 }
 
@@ -62,7 +62,7 @@ setup() {
   touch Gemfile
   echo "" | azk-init
 
-  box="$(cat azkfile.json | jq -r ".box")"
+  box="$(cat azkfile.json | jq -c -r ".box")"
   assert_equal "azukiapp/ruby-box#stable" "$box"
 }
 
@@ -70,7 +70,7 @@ setup() {
   touch package.json
   echo "" | azk-init
 
-  box="$(cat azkfile.json | jq -r ".box")"
+  box="$(cat azkfile.json | jq -c -r ".box")"
   assert_equal "azukiapp/node-box#stable" "$box"
 }
 
@@ -78,6 +78,6 @@ setup() {
   touch mix.exs
   echo "" | azk-init
 
-  box="$(cat azkfile.json | jq -r ".box")"
+  box="$(cat azkfile.json | jq -c -r ".box")"
   assert_equal "azukiapp/elixir-box#stable" "$box"
 }

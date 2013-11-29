@@ -208,8 +208,8 @@ mock_git_clone() {
 mock_project() {
   local azkfile="${AZK_TEST_DIR}/project/azkfile.json"
   cp_fixture full_azkfile $azkfile
-  local id=$(cat $azkfile | jq -r ".id")
-  echo "azk/apps:$id"
+  local id=$(cat $azkfile | jq -r -c ".id")
+  echo "azk/apps/$id"
 }
 
 @test "$test_label only return a image name for app type" {
