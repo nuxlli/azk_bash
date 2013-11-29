@@ -32,26 +32,33 @@ metrics_memory() {
   cat "/sys/fs/cgroup/memory/lxc/${1}/memory.max_usage_in_bytes"
 }
 
-awk_format='{ printf "%%{blue}%-13s%%{reset} %%{yellow}%-8s%%{reset} %%{cyan}%-14.14s%%{reset} %%{green}%s%%{reset}", $1, $2, $3, $4}'
-azk.escape "$(echo \
-  "Azk id**Memory**Up time**Command" | \
-  awk -F '**' "$awk_format" \
-)" $'\n---'
+query='map("\($s)\(.Id)\($s) \($s)\(.Command)\($s) \($s)\(.Status)\($s)") | @sh'
+eval "processes=($(azk.docker_containers | jq -r --arg s "\\'" $query))"
 
-processes="$(azk.docker_containers)"
-num=$(jq ". | length" <<< $processes)
+# Output format
+id_f="$(azk.escape "%{blue}%-13s%{reset}")"
+me_f="$(azk.escape "%{yellow}%-8s%{reset}")"
+up_f="$(azk.escape "%{cyan}%-14.14s%{reset}")"
+cm_f="$(azk.escape "%{green}%s%{reset}")"
+awk_format="$(printf \
+  '{ printf "%s %s %s %s \\n", $1, $2, $3, $4}' \
+  $id_f $me_f $up_f $cm_f \
+)"
 
-for i in $(seq 0 $(( $num - 1 ))); do
-  process=$(jq ".[$i]" <<< $processes )
-  id="$(echo $process | jq -r '.Id')"
-  command="$(echo $process | jq -r '.Command')"
-  status="$(echo $process | jq -r '.Status')"
+# Label
+echo "Azk id**Memory**Up time**Command" | awk -F '**' "$awk_format"
+echo "---"
+
+# Processes
+for i in "${processes[@]}"; do
+  eval "process=($(echo "$i"))"
+  id="${process[0]}"
+  command="${process[1]}"
+  status="${process[2]}"
 
   memory=$(( $(metrics_memory $id) / 1024 ))
   short_pid="$(printf "%.12s " "$id")"
 
-  azk.escape "$(echo \
-    "$short_pid**${memory}kb**$status**$command" | \
-    awk -F '**' "$awk_format" \
-  )"
+  echo "$short_pid**${memory}K**$status**$command" | \
+    awk -F '**' "$awk_format"
 done
