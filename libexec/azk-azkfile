@@ -27,7 +27,7 @@ if [ -z "$file" ]; then
   exit 1
 else
   # Valid azk file
-  if cat $file | jq "." 1>/dev/null; then
+  if cat $file | jq -c "." 1>/dev/null; then
     echo $file
   else
     azk.error "'%{yellow}$file%{reset}' is not valid json format"

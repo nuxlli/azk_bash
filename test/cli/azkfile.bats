@@ -62,3 +62,9 @@ setup() {
   run azk-azkfile
   assert_success "${AZK_TEST_DIR}/${AZK_FILE_NAME}"
 }
+
+@test "$test_label clear comments in valid json file" {
+  echo "{ /* comment */ }" > "${AZK_FILE_NAME}"
+  run azk-azkfile
+  assert_success
+}
