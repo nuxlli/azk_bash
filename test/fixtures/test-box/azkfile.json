@@ -1,6 +1,6 @@
 {
   // Box base
-  "platform": "ubuntu:12.04",
+  "box": "ubuntu:12.04",
 
   // Build steps
   "build": [

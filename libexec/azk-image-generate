@@ -32,12 +32,11 @@ meta() {
 # Build Dockerfile
 declare -a dockerfile
 
-# box?
-meta from ".platform"
-
-# app?
-if [ "$from" = "null" ]; then
+# Box based
+if [ "$1" = "app" ]; then
   from=$(azk-provision --get-name box)
+else
+  meta from ".box"
 fi
 
 dockerfile+=("FROM $from")
