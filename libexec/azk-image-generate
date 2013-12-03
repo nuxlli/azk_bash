@@ -56,4 +56,4 @@ dockerfile+=("RUN echo '$tag' > /etc/azk_image")
 printf "%s\n" "${dockerfile[@]}" > ./Dockerfile
 
 # Run docker build and tag image
-docker build -q=true -rm -t $tag .
+docker build -q -rm -t $tag .

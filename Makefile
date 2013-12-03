@@ -21,6 +21,15 @@ else
 	LOCAL := "\x1b[30;43;5;82m%${LOCAL_PRE_BANNER}s${LOCAL_BANNER} %${LOCAL_PRE_BANNER}s\n\x1b[0m\n"
 endif
 
+# install azk
+install: vagrant
+	@vagrant up
+	@vagrant ssh -c "/home/core/azk/bin/azk admin install"
+
+vagrant:
+	@echo "Check for vagrant..."
+	@vagrant -v &>/dev/null || echo "Vagrant this actually installed?"
+
 test: test-local
 	@printf "\n\n\x1b[30;44;5;82m%${REMOTE_PRE_BANNER}s${REMOTE_BANNER} %${REMOTE_PRE_BANNER}s"
 	@echo "\n\x1b[0m"
@@ -40,4 +49,4 @@ rerun:
 	@which rerun &>/dev/null || (echo "Rerun not found, install: gem install rerun" && exit 1)
 	@rerun -c --no-growl --pattern $(RERUN_PATTERN) "./deps/bats/bin/bats $(TEST_FILES)"
 
-.PHONY: test test-local get-deps rerun
+.PHONY: install test test-local get-deps rerun

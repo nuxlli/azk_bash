@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Summary: Azk agent administrator
+# Usage: azk admin <command>
+
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+# Provide azk completions
+if [ "$1" = "--complete" ]; then
+  exit
+fi
+
+# run only is --final flag
+if [ ! "$1" = "--final" ]; then
+  exec azk-agent-exec admin "$@"
+fi
+
+# Tools
+source "$(azk-root)/private/bin/common.sh"
+
+# Check for base image
+azk.info "Check for base image (ubuntu:12.04)..."
+base_id="$(azk dcli /images/ubuntu:12.04/json | jq -r ".id")"
+
+# Pull base image
+if [ "$base_id" = "null" ]; then
+  docker pull ubuntu:12.04
+fi
+
+# Check for balancer image
+azk.info "Check for balancer image (azk/balancer)..."
+balancer_id="$(azk dcli /images/azk/balancer/json 2>/dev/null || echo "{}" | jq -r ".id")"
+
+if [ "$balancer_id" = "null" ]; then
+  docker build -no-cache -rm -t "azk/balancer" "$(azk-root)/private/lib/balancer"
+fi
+
+# Check balancer containers
+azk.info "Check if balancer containers is running..."
+query='map(select(.Image == "azk/balancer:latest")) | .[0].Id'
+balancer_id="$(azk dcli /containers/json | jq -r $query)"
+
+if [ "$balancer_id" = "null" ]; then
+  balancer_id="$(docker run -d -p 80 -p 6379 azk/balancer)"
+fi
+
+iptables_forward() {
+  sudo iptables -t nat "$1" PREROUTING -p tcp --dst "$2" --dport "$3" -j REDIRECT --to-port "$4"
+}
+
+# Ports
+ports=(80)
+azk_agent_ip="$(echo $SSH_CONNECTION | awk '{printf $3}')"
+for port in "${ports[@]}"; do
+  # Have a rule
+  actual_ports="$(sudo iptables-save -t nat | grep '^-A\sPREROUTING' | grep "$azk_agent_ip" | grep "\-\-dport\s$port" | awk '{print $NF}')"
+  if [ ! -z "$actual_ports" ]; then
+    for actual_port in $(echo "$actual_ports"); do
+      iptables_forward -D $azk_agent_ip $port $actual_port
+      iptables_forward -D 127.0.0.1 $port $actual_port
+    done
+  fi
+
+  docker_port="$(docker port $balancer_id $port | awk -F : '{print $2}')"
+  iptables_forward -A $azk_agent_ip $port $docker_port
+  iptables_forward -A 127.0.0.1 $port $docker_port
+done

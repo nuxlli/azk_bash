@@ -7,14 +7,68 @@ projects and stack of languages.
 
 **Features** : provision, monitoring, builtin load balancer, automatic startup script, logging...
 
+## Requirements
+
+* Linux or Mac OS X
+* Vagrant (required for Mac OSX or Linux 32)
+* Internet connection (provision process)
+* git
+
+### OS dependencies:
+
+* Install [vagrant](http://www.vagrantup.com)
+* Install [docker](http://docker.io) (Linux only)
+
+### Install
+
+1. clone repo
+
+```bash
+$ git clone https://github.com/azukiapp/azk.git ~/.azk
+$ cd ~/.azk
+```
+
+3. adding in shell profile (ex: ~/.bash_profile)
+
+```bash
+# Azk
+export  AZK_AGENT_IP="192.168.100.1"
+export AZK_APPS_PATH=~/Sites
+if [ -d ~/.azk/bin/azk ]; then
+  export PATH=~/.azk/bin:$PATH
+  eval "$(azk sh-init -)"
+fi
+```
+
+```bash
+$ source ~/.bash_profile
+```
+
+2. adding azk-agent in /etc/hosts
+
+```bash
+$ echo "$AZK_AGENT_IP azk-agent" | sudo tee -a /etc/hosts
+```
+
+3. run azk-agent
+
+```bash
+$ make install
+```
+6. enjoy
+
+```bash
+$ azk help
+```
+
 ## Usage/Features
 
 ```bash
 $ azk init [project] [--box "azukiapp/ruby#0.1.0"] # Create a Azkfile.json
 
 # Run a specific command
-$ azk exec /bin/bash              # Run bash in box
-$ azk exec gem install rails      # Install rails gem in box
+$ azk exec -i /bin/bash           # Run bash
+$ azk exec /bin/bash --version    # Show the version bash installed in image-app
 
 # Run a background services (Azkfile.json#service)
 $ azk service start -n 5          # Start 5 instances of default service
@@ -27,66 +81,9 @@ $ azk service restart all         # Hard Restart all default service proccesses
 $ azk service redis restart       # Restart redis service
 $ azk logs                        # Display all processes logs in streaming
 $ azk ps                          # Display all processes status
-$ azk monit                       # Monitor all processes
+$ azk monit                       # Monitor in real time all processes
 $ azk web                         # Health computer API endpoint:
                                   # (http://[project].dev.azk.io)
-```
-
-## Development Use
-
-### OS dependencies:
-
-* Install [vagrant](http://www.vagrantup.com)
-
-### Install
-
-1. clone this repo
-
-```bash
-$ git clone https://github.com/azukiapp/azk.git
-$ cd azk
-```
-
-3. adding in shell profile (ex: ~/.bash_profile)
-
-```bash
-# Azk
-export      AZK_ROOT=[azk path]
-export  AZK_AGENT_IP="192.168.100.1"
-export AZK_APPS_PATH=~/Sites
-if [ -d $AZK_ROOT/bin/azk ]; then
-  export PATH=$AZK_ROOT/bin:$PATH
-  eval "$(azk sh-init -)"
-fi
-```
-
-```bash
-$ source ~/.bash_profile
-```
-
-2. run azk-agent
-
-```bash
-$ vagrant up
-```
-
-3. adding azk-agent in /etc/hosts
-
-```bash
-$ echo "$AZK_AGENT_IP azk-agent" | sudo tee -a /etc/hosts
-```
-	
-4. install depedences and check tests
-
-```bash
-$ make get-deps
-$ make test
-```
-   
-5. enjoy
-
-```bash
-$ azk help
 ```
 
 ## License
