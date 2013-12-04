@@ -24,7 +24,7 @@ endif
 # install azk
 install: vagrant
 	@vagrant up
-	@vagrant ssh -c "/home/core/azk/bin/azk admin install"
+	@bash ./bin/azk admin install
 
 vagrant:
 	@echo "Check for vagrant..."
