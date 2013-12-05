@@ -1,10 +1,12 @@
 # -*- mode: ruby -*-
 # # vi: set ft=ruby :
 
+require 'resolv'
+
 Vagrant.configure("2") do |config|
   config.vm.box = "coreos"
   config.vm.box_url = "http://storage.core-os.net/coreos/amd64-generic/dev-channel/coreos_production_vagrant.box"
-  config.vm.network "private_network", ip: ENV["AZK_AGENT_IP"] || "192.168.50.4"
+  config.vm.network "private_network", ip: Resolv.getaddress("azk-agent") || "192.168.115.4"
 
   azk_path  = File.expand_path(".")
   apps_path = File.expand_path(ENV["AZK_APPS_PATH"] || "~/Sites")
