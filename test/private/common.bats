@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+set -e
+
 load ../test_helper
 
 source `azk root`/private/bin/common.sh
@@ -73,4 +75,31 @@ source `azk root`/private/bin/common.sh
 
   run azk.uuid 15
   assert_success "$(printf "%.15s" "$uuid")"
+}
+
+@test "$test_label get a agent_id" {
+  ping() {
+    if [[ "$@" =~ ^-q\ -c\ 1\ -t\ 1\ (azk-agent|agent)$ ]]; then
+      echo "PING azk-agent (172.16.0.4): 56 bytes"
+      echo "64 bytes from 172.16.0.4: icmp_seq=0 ttl=64 time=0.556 ms"
+      return 0
+    fi
+    return 1
+  }; export -f ping
+
+  export AZK_AGENT_HOST="agent"
+  run azk.agent_ip
+  assert_success "172.16.0.4"
+
+  export AZK_AGENT_HOST="invalid"
+  run azk.agent_ip
+  assert_failure "azk: azk-agent not found"
+
+  export SSH_CONNECTION="192.168.115.1 64850 192.168.50.4 22"
+  run azk.agent_ip
+  assert_success "192.168.50.4"
+
+  export AZK_AGENT_IP="10.0.0.2"
+  run azk.agent_ip
+  assert_success "10.0.0.2"
 }

@@ -74,10 +74,60 @@ azk.uuid() {
 }
 
 azk.redis() {
-  exec 6<>/dev/tcp/127.0.0.1/49229
+    ip=`azk.agent_ip`
+  port=49157
+  exec 6<>/dev/tcp/$ip/$port
   if [ $? -ne 0 ]; then
     azk.error "[redis] dont connect to redis"
     exit 1
   fi
   redis-client "$@"
+}
+
+# TODO: Add support ipv6
+azk.valid_ip() {
+  local ip=$1
+  local stat=1
+
+  if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+    OIFS=$IFS
+    IFS='.'
+    ip=($ip)
+    IFS=$OIFS
+    [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+        && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+    stat=$?
+  fi
+  return $stat
+}
+
+azk.agent_ip() {
+  # Forcefully
+  if [ ! -z "$AZK_AGENT_IP" ]; then
+    echo $AZK_AGENT_IP
+    return 0
+  fi
+
+  # From ssh connection
+  azk_agent_ip="$(echo $SSH_CONNECTION | awk '{printf $3}')"
+  if [ ! -z "$azk_agent_ip" ]; then
+    echo $azk_agent_ip
+    return 0
+  fi
+
+  # Via hostname
+  AZK_AGENT_HOST="${AZK_AGENT_HOST:-azk-agent}"
+  azk_agent_ip="$( \
+    ping -q -c 1 -t 1 $AZK_AGENT_HOST | \
+    grep PING | sed -e "s/).*//" | \
+    sed -e "s/.*(//" \
+  )"
+
+  if azk.valid_ip "$azk_agent_ip"; then
+    echo $azk_agent_ip;
+    return 0;
+  fi
+
+  azk.error "azk-agent not found"
+  return 1;
 }

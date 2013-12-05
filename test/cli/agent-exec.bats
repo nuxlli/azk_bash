@@ -45,11 +45,11 @@ set_not_docker() {
   # mocks
   set_not_docker
   azk-agent-ssh() {
-    [[ "$@" == "azk-agent.invalid echo 1" ]] && return 255;
+    [[ "$@" == "192.168.115.4 echo 1" ]] && return 255;
     return 0;
   }; export -f azk-agent-ssh
 
-  export AZK_AGENT_HOST="azk-agent.invalid"
+  export AZK_AGENT_IP="192.168.115.4"
   run azk-agent-exec exec
   assert_failure
   assert_match '^azk: cannot find docker or agent' "${lines[0]}"
@@ -67,8 +67,9 @@ set_not_docker() {
   mkdir -p $AZK_TEST_DIR/project
   cd project
 
-  export TERM=term;
-  export AZK_INTERACTIVE=true;
+  export TERM=term
+  export AZK_INTERACTIVE=true
+  export AZK_AGENT_IP="192.168.115.4"
 
   local envs="export TERM=${TERM}; export AZK_DEBUG=$AZK_DEBUG; export AZK_INTERACTIVE=$AZK_INTERACTIVE; export AZK_ENV=$AZK_ENV"
   local path="/home/core/azk"
@@ -76,14 +77,16 @@ set_not_docker() {
   azk-agent-exec echo "any value"
   run azk-agent-exec echo "any value"
   assert_success
-  assert_output "azk-agent  $envs; cd $path/data/apps/project; $path/libexec/azk echo --final any\\ value"
+  assert_output "${AZK_AGENT_IP}  $envs; cd $path/data/apps/project; $path/libexec/azk echo --final any\\ value"
 }
 
 @test "$test_label show erro if not valid azk-agent path" {
   set_not_docker
   azk-agent-ssh() {
-    [[ "$@" == "azk-agent echo 1" ]] && return 0;
+    [[ "$@" == "192.168.115.4 echo 1" ]] && return 0;
   }; export -f azk-agent-ssh
+
+  export AZK_AGENT_IP="192.168.115.4"
   export AZK_APPS_PATH="${AZK_TEST_DIR}/projects"
 
   run azk-agent-exec echo "any value"
