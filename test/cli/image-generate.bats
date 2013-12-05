@@ -36,7 +36,7 @@ setup() {
   }; export -f docker
 
   run azk-image-generate box $clone_path image:tag
-  assert_success "build -q=true -rm -t image:tag ."
+  assert_success "build -q -rm -t image:tag ."
 
   run cat $clone_path/Dockerfile
   assert_match 'FROM ubuntu:12.04' "${lines[0]}"
@@ -61,7 +61,7 @@ mock_project() {
   }; export -f docker
 
   run azk-image-generate app `pwd` $image_tag
-  assert_success "build -q=true -rm -t $image_tag ."
+  assert_success "build -q -rm -t $image_tag ."
 
   run cat Dockerfile
   assert_match "FROM $box_tag" "${lines[0]}"
