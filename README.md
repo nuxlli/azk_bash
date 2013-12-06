@@ -19,31 +19,30 @@ Ele faz isto através de chamadas a api do docker, dessa forma azk é capaz de p
 
 ### Entendendo o cli
 
-Para a maior parte das tarefas o comando `azk` primariamente tenta determinar se a pasta corrente é uma `azk application`, para isso ele verifica a existência do arquivo `azkfile.json` na árvore de diretórios da aplicação.
+Para a maior parte das tarefas o comando `azk` primariamente tenta determinar se a pasta corrente é uma `azk app`, para isso ele verifica a existência do arquivo `azkfile.json` na árvore de diretórios da aplicação.
 
-Uma vez determinada a validade da `azk application` é hora de buscar pelo `azk-agent` que será o responsável de fato por executar o comando.
+Uma vez determinada a validade da `azk app` é hora de buscar pelo `azk-agent` que será o responsável por executar o comando em um ambiente isolado da máquina principipal.
 
 ### Entendendo o azk-agent
 
-O `azk-agent` pode ser entendi como o serviço responsável pela execução dos comandos do `azk`. A primeira coisa que o azk-agent determina e se na máquina atual existe a instalação de um docker, se for o caso os comandos são executados com base no docker instalado diretamente na máquina.
-
-No caso do docker não estar instalado na máquina atual, o `azk-agent` busca pelo docker em uma máquina virtual que deve ser especificada através do hostname `azk-agent`, e por fim os comandos são executados através de uma conexão ssh.
+O `azk-agent` pode ser entendi como o serviço responsável pela execução dos comandos do `azk` em um ambiente isolado através do uso do sistema de containers. No fundo o azk-agent é uma máquina virtual rodando o [coreos](http://coreos.com) sobre o virtualbox (vmware esta programando).
 
 ### Entendendo o mapeamento de disco 
 
-Quando o docker não estiver instalado na máquina e a estratégia de roda-lo sobre uma máquina virtual for utilizada é necessário um passo extra de "mapeamento de disco".
+Como o azk-agent roda sobre uma máquina virtual é preciso fazer um compartilhamento de disco da maquina host com a máquina virtual do azk-agent.
 
-Neste caso uma pasta base para os projetos deve ser configurada no momento em que a máquina virtual for configurada (variável de ambiente AZK_APPS_PATH). Esta pasta será mapeada dentro da máquina virtual, e no momento da execução dos comandos `azk` o mapeamento da pasta para dentro do docker será feito da forma correta.
+Para evitar que para cada `azk app` seja feito um novo compartilhamento e montagem, o azk usa uma estratégia onde na sua instalação é definido uma pasta base onde todos as aplicações que você deseja desenvolver com azk devem estar, dai em diante ele cuida do processo de `resolver` o endereço desta pasta dentro da máquina virtual.
+
+Para customizar essa pasta basta definir a variável de ambiente `AZK_APPS_PATH` antes de executar o processo de instalação do azk.
 
 ## Installation
 
-**Compatibility note**: Em um ambiente `Linux x64`, o azk depende apenas da instalação prévia do [docker](http://docker.io). Porém em outros ambientes como `Mac OS X` ou `Linux x86` se faz necessário a instalação de uma ferramenta para execução de uma máquina virtual onde o docker será executado, no caso o [Vagrant](http://www.vagrantup.com).
+Todo o processo de provisionamento e configuração do ambiente para execução das aplicações se dá dentro de uma máquina virtual. Atualmente essa máquina virtual é administrada pelo aplicativo [Vagrant](http://www.vagrantup.com), que é requisito para uso do azk.
 
 ### Requirements
 
 * Linux or Mac OS X (Windows: planned)
-* [Vagrant](http://www.vagrantup.com) (required for Mac OSX or Linux 32bits)
-* [Docker](http://docker.io) (Linux 64bits only)
+* [Vagrant](http://www.vagrantup.com)
 * Internet connection (provision process)
 * git
 
@@ -55,12 +54,12 @@ Neste caso uma pasta base para os projetos deve ser configurada no momento em qu
 $ git clone https://github.com/azukiapp/azk.git ~/.azk
 ```
 
-2. Configure azk-agent ip (Mac OSX or Linux 32bits)
+2. Configure azk-agent ip
 
-Em ambientes onde o vagrant for necessário é preciso definir um ip para a máquina virtual onde o azk-agent sera executado. Por padrão este ip é `192.168.115.4`, mas ele pode ser definido da seguinte forma:
+Para que o azk tenha acesso ao `azk-agent` é necessário definir um ip para máquina virtual, este ip sera usado para estabelecer uma rede privada entre a máquina onde o azk esta instalado o a máquina virtual onde o `azk-agent` é executado.
 
 ```bash
-$ echo '192.168.2.4 azk-agent` | sudo tee -a /etc/hosts 
+$ echo '192.168.115.4 azk-agent` | sudo tee -a /etc/hosts 
 ```
 
 3. Add ~/.azk/bin to your $PATH for access to the ask command-line utility.
