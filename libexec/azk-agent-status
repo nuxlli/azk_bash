@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Summary: Show azk-agent status informations
+# Usage: azk agent-status
+
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+# run only is --final flag
+if [ ! "$1" = "--final" ]; then
+  exec azk-agent-exec agent-status "$@"
+fi
+
+echo "Agent is running..."
