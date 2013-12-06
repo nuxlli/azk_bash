@@ -25,6 +25,7 @@ fi
 
 # Request data
 path="$1"
+default="$2"
 
 # Headers request
 declare -a request
@@ -40,9 +41,14 @@ response_raw="$(echo -en "$request" '\r\n\n' | socat -t20 unix:$socket stdio)"
 # Code returned
 read -r _proto code desc <<<$(echo "$response_raw" | head -n 1)
 if [ ! "$code" -eq 200 ]; then
-  desc="${desc%%$'\r'}"
-  azk.error "error to request ${path} => ${code} ${desc}"
-  exit 1;
+  if [ "$code" -eq 404 -a ! -z "$default" ]; then
+    echo -en "$default"
+    exit 0;
+  else
+    desc="${desc%%$'\r'}"
+    azk.error "error to request ${path} => ${code} ${desc}"
+    exit 1;
+  fi
 fi
 
 if [ -z "$(echo "$response_raw" | grep "Transfer-Encoding: chunked")" ]; then

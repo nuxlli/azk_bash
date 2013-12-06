@@ -73,3 +73,14 @@ EOF
   run azk-dcli --final /images
   assert_failure 'azk: error to request /images => 404 Not Found'
 }
+
+@test "$test_label return default if 404" {
+  mock_file="${AZK_TEST_DIR}/mock_docker"
+  mkdir -p $(dirname "${mock_file}")
+  echo 'echo -en "HTTP/1.1 404 Not Found\r\n\r\n[]"' > $mock_file
+  mock_docker "${mock_file}"
+  sleep 0.1;
+
+  run azk-dcli --final /images "{}"
+  assert_success '{}'
+}
