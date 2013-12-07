@@ -68,6 +68,11 @@ setup() {
   assert_equal "$(pwd)/box" $(echo $output | jq -r ".clone_path")
 }
 
+@test "$test_label show a erro if path not found" {
+  run azk-box info ./novalid
+  assert_failure "azk: box path './novalid' not found"
+}
+
 @test "$test_label unsupported box definition" {
   run azk-box info "%%#^%@"
   assert_failure "azk: Unsupported box definition"

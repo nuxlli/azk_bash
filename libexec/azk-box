@@ -20,7 +20,14 @@ box_info() {
 
     info_vers="$(expr "$box" : '[[:alnum:]|/|-]*#\(.*\)')"
     info_vers="${info_vers:-master}"
-  elif [[ -d "$box" && "$box" =~ ^$path_regex$ ]]; then
+
+  # Path?
+  elif [[ "$box" =~ ^$path_regex$ ]]; then
+    if [ ! -d "$box" ]; then
+      azk.error "box path '$box' not found"
+      exit 1;
+    fi
+
     box="$(cd $box; pwd)"
     info_type="path"
     info_path="$box"
