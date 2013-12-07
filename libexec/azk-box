@@ -1,0 +1,48 @@
+#!/usr/bin/env azk interpreter
+#
+# Summary: Management and return information about the boxes
+#
+# Usage: azk box command <box>
+
+[ -z "$1" ] && show_usage box
+
+box_info() {
+  box="$1"
+
+  github_regex="([A-Za-z0-9-])+/([A-Za-z0-9-])+(#.+)?"
+  path_regex="(\.\./|\./|/).*"
+
+  # Github?
+  if [[ "$box" =~ ^$github_regex$ ]]; then
+    info_type="github"
+    info_path="$(expr "$box" : '\([A-Za-z0-9|/|-]*\).*')"
+    info_repo="https://github.com/${info_path}"
+
+    info_vers="$(expr "$box" : '[A-Za-z0-9|/|-]*#\(.*\)')"
+    info_vers="${info_vers:-master}"
+  elif [[ "$box" =~ ^$path_regex$ ]]; then
+    info_type="path"
+    info_path="$box"
+    info_repo="$box"
+    info_vers="$(tar c $box 2>/dev/null | azk.hash)"
+  fi
+
+  info_image="$info_path:$info_vers"
+
+  # Unsupported
+  if [ -z "$info_type" ]; then
+    azk.error "Unsupported box definition"
+    exit 1
+  else
+    # Return
+    echo "{
+      \"type\": \"$info_type\",
+      \"repository\": \"$info_repo\",
+      \"clone_path\": \"$info_path\",
+      \"version\": \"$info_vers\",
+      \"image\": \"$info_image\"
+    }"
+  fi
+}
+
+azk.run_internal "$@"
