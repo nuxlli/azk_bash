@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+#
+# Summary: Meta azk command that assists in defining other process commands
+#
+# Usage: azk interpreter <azk-script> [args]
+
+set -e
+[ -n "$AZK_DEBUG" ] && set -x
+
+show_usage() {
+  azk-help --usage $1 >&2
+  exit 1
+}
+
+# Require script
+[ -z "$1" ] && show_usage interpreter
+
+# Script
+azk_command_script="$1"; shift
+
+# Resolve command name
+azk_command="$(basename $azk_command_script)"
+azk_command="${azk_command#azk-}"
+
+# Tools
+source "$(azk-root)/private/bin/common.sh"
+
+# Helpers
+azk.run_internal() {
+  local command="$1"; shift
+  type "${azk_command}_${command}" &>/dev/null && \
+    eval "${azk_command}_${command} $@" ||
+    {
+      [ ! -z "$command" ] && azk.error "'$command' unsupported command"
+      azk-help --usage "$azk_command" >&2
+      exit 1;
+    }
+}
+
+# Source command script
+source "$azk_command_script"
