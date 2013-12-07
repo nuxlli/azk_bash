@@ -13,7 +13,7 @@ mock_cmd() {
   create_file "$script"
   chmod +x $script
 
-  echo '#!/usr/bin/env azk interpreter' > $script
+  echo '#!/usr/bin/env azk-interpreter' > $script
 }
 
 @test "$test_label required parameters" {
@@ -50,7 +50,6 @@ mock_cmd() {
 
 @test "$test_label implement helper azk.run_internal" {
   mock_cmd
-  echo '#!/usr/bin/env azk-interpreter' > $script
   echo "${command}_internal() { echo \"\$@\"; }" >> $script
   echo 'azk.run_internal "$@"' >> $script
 

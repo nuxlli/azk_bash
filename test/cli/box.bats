@@ -1,7 +1,12 @@
 #!/usr/bin/env bats
 
 load ../test_helper
-source `azk root`/private/bin/common.sh
+source `azk-root`/private/bin/common.sh
+
+setup() {
+  mkdir -p "$AZK_TEST_DIR"
+  cd "$AZK_TEST_DIR"
+}
 
 @test "$test_label required parameters" {
   run azk-box
@@ -31,11 +36,8 @@ source `azk root`/private/bin/common.sh
 }
 
 @test "$test_label support path format" {
-  path="${AZK_TEST_DIR}"
-  mkdir -p $path
-  cd $path
-
   type="path"
+  path="${AZK_TEST_DIR}"
   version="$(tar c $path | azk.hash)"
   image="$path:$version"
 
@@ -47,6 +49,23 @@ source `azk root`/private/bin/common.sh
   assert_equal "$path"    $(echo $output | jq -r ".clone_path")
   assert_equal "$version" $(echo $output | jq -r ".version")
   assert_equal "$image"   $(echo $output | jq -r ".image")
+}
+
+@test "$test_label expand relative path" {
+  path="./box/"
+  mkdir -p "$path"
+
+  run azk-box info $path
+  assert_success
+
+  assert_equal "path"       $(echo $output | jq -r ".type")
+  assert_equal "$(pwd)/box" $(echo $output | jq -r ".clone_path")
+
+  mkdir -p "./app"
+  run eval "cd './app'; azk-box info '../box'"
+
+  assert_equal "path"       $(echo $output | jq -r ".type")
+  assert_equal "$(pwd)/box" $(echo $output | jq -r ".clone_path")
 }
 
 @test "$test_label unsupported box definition" {
