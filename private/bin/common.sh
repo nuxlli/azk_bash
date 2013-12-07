@@ -1,5 +1,31 @@
 #!/usr/bin/env bash
 
+azk.resolve_link() {
+  if [ -z "$__AZK_READLINK" ]; then
+    export __AZK_READLINK=$(type -p greadlink readlink | head -1)
+    if [ -z "$__AZK_READLINK" ]; then
+      azk.error "cannot find readlink - are you missing GNU coreutils?"
+      exit 1
+    fi
+  fi
+
+  $__AZK_READLINK "$1"
+}
+
+azk.abs_dirname() {
+  local cwd="$(pwd)"
+  local path="$1"
+
+  while [ -n "$path" ]; do
+    cd "${path%/*}"
+    local name="${path##*/}"
+    path="$(azk.resolve_link "$name" || true)"
+  done
+
+  pwd
+  cd "$cwd"
+}
+
 # TODO: Refectory to use a common functions
 azk.debug.color() {
   case "${1}" in
@@ -75,7 +101,7 @@ azk.uuid() {
 
 azk.redis() {
     ip=`azk.agent_ip`
-  port=49157
+  port=49153
   exec 6<>/dev/tcp/$ip/$port
   if [ $? -ne 0 ]; then
     azk.error "[redis] dont connect to redis"

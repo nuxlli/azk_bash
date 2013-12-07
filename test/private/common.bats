@@ -104,7 +104,7 @@ source `azk root`/private/bin/common.sh
   assert_success "10.0.0.2"
 }
 
-@test "$test_local calculate a hash" {
+@test "$test_label calculate a hash" {
   sha1sum() {
     echo "Error" >&2
     return 1

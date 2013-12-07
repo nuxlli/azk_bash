@@ -13,20 +13,19 @@ mock_uname() {
 }
 
 @test "$test_label call linux 32" {
-  #mocks
+  # mocks
   mock_uname i686 Linux
   exec() {
     echo $@
   }; export -f exec
 
   run jq
-  echo $output
   assert_success
   assert_output "$(azk root)/private/lib/jq/linux/jq_x86"
 }
 
 @test "$test_label call mac os x" {
-  #mocks
+  # mocks
   mock_uname i386 Darwin
   exec() {
     echo $@
@@ -38,7 +37,7 @@ mock_uname() {
 }
 
 @test "$test_label a system not supported" {
-  #mocks
+  # mocks
   uname() { exit 1; }
   export -f uname
 
