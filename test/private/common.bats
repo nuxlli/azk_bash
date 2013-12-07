@@ -78,6 +78,8 @@ source `azk root`/private/bin/common.sh
 }
 
 @test "$test_label get a agent_id" {
+  export SSH_CONNECTION=""
+
   ping() {
     if [[ "$@" =~ ^-q\ -c\ 1\ -t\ 1\ (azk-agent|agent)$ ]]; then
       echo "PING azk-agent (172.16.0.4): 56 bytes"

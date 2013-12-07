@@ -45,7 +45,7 @@ setup() {
   assert_success
 
   assert_equal "$type"    $(echo $output | jq -r ".type")
-  assert_equal "$path"    $(echo $output | jq -r ".repository")
+  assert_equal "null"     $(echo $output | jq -r ".repository")
   assert_equal "$path"    $(echo $output | jq -r ".clone_path")
   assert_equal "$version" $(echo $output | jq -r ".version")
   assert_equal "$image"   $(echo $output | jq -r ".image")
@@ -71,6 +71,24 @@ setup() {
 @test "$test_label show a erro if path not found" {
   run azk-box info ./novalid
   assert_failure "azk: box path './novalid' not found"
+}
+
+@test "$test_label support docker image format" {
+  run azk-box info ubuntu:12.04
+  echo "$output"
+  assert_success
+
+  assert_equal "image" $(echo $output | jq -r ".type")
+  assert_equal "null"  $(echo $output | jq -r ".clone_path")
+  assert_equal "null"  $(echo $output | jq -r ".repository")
+  assert_equal "12.04" $(echo $output | jq -r ".version")
+  assert_equal "ubuntu:12.04" $(echo $output | jq -r ".image")
+
+  run azk-box info azk/ima-g_e
+  assert_success
+
+  assert_equal "azk/ima-g_e" $(echo $output | jq -r ".image")
+  assert_equal "latest" $(echo $output | jq -r ".version")
 }
 
 @test "$test_label unsupported box definition" {
