@@ -131,3 +131,7 @@ azk.agent_ip() {
   azk.error "azk-agent not found"
   return 1;
 }
+
+azk.hash() {
+  { sha1sum 2>/dev/null || shasum; } | awk '{print $1}'
+}

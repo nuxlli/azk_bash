@@ -103,3 +103,26 @@ source `azk root`/private/bin/common.sh
   run azk.agent_ip
   assert_success "10.0.0.2"
 }
+
+@test "$test_local calculate a hash" {
+  sha1sum() {
+    echo "Error" >&2
+    return 1
+  }
+
+  shasum() {
+    echo "shasum -";
+  }
+
+  run eval "echo 'foobar' | azk.hash"
+  echo $output
+  assert_success "shasum"
+
+  sha1sum() {
+    echo "sha1sum -"
+  }
+
+  export -f sha1sum
+  run eval "echo 'foobar' | azk.hash"
+  assert_success "sha1sum"
+}
