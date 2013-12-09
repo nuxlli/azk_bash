@@ -4,14 +4,14 @@
 #
 # Usage: azk box command <box>
 
-[ -z "$1" ] && show_usage box
+[ -z "$1" ] && show_usage $azk_command
 
 box_info() {
   box="$1"
 
   path_regex="(\.\./|\./|/).*"
   github_regex="[[:alnum:]-]+/[[:alnum:]-]+(#.+)?"
-  docker_regex="[[:alnum:]|\.|_|/|\:|-]+"
+  docker_regex="docker:[[:alnum:]|\.|_|/|\:|-]+"
 
   # Github?
   if [[ "$box" =~ ^$github_regex$ ]]; then
@@ -38,10 +38,10 @@ box_info() {
 
   # Docker image
   elif [[ "$box" =~ ^$docker_regex$ ]]; then
-    info_type="image"
-    info_vers="$(expr "$box" : '[[:alnum:]|\.|/|-|_]*:\(.*\)')"
+    info_type="docker"
+    info_vers="$(expr "$box" : 'docker:[[:alnum:]|\.|/|-|_]*:\(.*\)')"
     info_vers="${info_vers:-latest}"
-    info_image="$box"
+    info_image="$(expr "$box" : 'docker:\(.*\)')"
   fi
 
   str_or_null() {
@@ -51,7 +51,7 @@ box_info() {
 
   # Unsupported
   if [ -z "$info_type" ]; then
-    azk.error "Unsupported box definition"
+    azk.error "'$box' is not a valid definition of box"
     exit 1
   else
     # Return
