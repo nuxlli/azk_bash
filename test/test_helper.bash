@@ -5,7 +5,7 @@ unset AZK_DIR
 _AZK_PATH=${_AZK_PATH:-`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} )\`/..; pwd`}
 
 AZK_FILE_NAME="azkfile.json"
- AZK_TEST_DIR="${BATS_TMPDIR}/azk"
+ AZK_TEST_DIR="${_AZK_PATH}/tmp/bats/$(date +%s)$RANDOM"
 HOME="${AZK_TEST_DIR}/home"
 
 PATH=/usr/bin:/bin:/usr/sbin:/sbin
