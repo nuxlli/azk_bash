@@ -18,7 +18,12 @@ case "${agent_command:-status}" in
     exec vagrant $agent_command
     ;;
   up|reload)
+    cd `azk-root`
     exec vagrant "$agent_command" --provision
+    ;;
+  restart)
+    cd `azk-root`
+    vagrant reload --provision
     ;;
   status)
     exec azk agent-status
