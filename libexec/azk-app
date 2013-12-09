@@ -1,0 +1,30 @@
+#!/usr/bin/env azk-interpreter
+#
+# Summary: Management and return information about the boxes
+#
+# Usage: azk box command <box>
+
+[ -z "$1" ] && show_usage $azk_command
+
+azkfile=`azk-azkfile`
+azkfile_content="$(cat $azkfile | jq -r -c ".")"
+
+meta() {
+  echo "$azkfile_content" | jq -r ".$1"
+}
+
+str_or_null() {
+  [ -z "$1" ] && echo "null" || \
+    echo "\"$1\""
+}
+
+ root_path=$(azk.abs_dirname $azkfile)
+agent_path=$(azk.resolve_app_agent_dir $root_path)
+
+echo "{
+  \"id\": $(str_or_null $(meta id)),
+  \"box\": $(str_or_null $(meta box)),
+  \"path\": $(str_or_null $root_path),
+  \"azkfile\": $(str_or_null $azkfile),
+  \"agent_path\": $(str_or_null $agent_path)
+}"
