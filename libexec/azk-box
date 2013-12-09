@@ -11,7 +11,7 @@ box_info() {
 
   path_regex="(\.\./|\./|/).*"
   github_regex="[[:alnum:]-]+/[[:alnum:]-]+(#.+)?"
-  docker_regex="docker:[[:alnum:]|\.|_|/|\:|-]+"
+  docker_regex="[[:alnum:]|\.|_|/|\:|-]+"
 
   # Github?
   if [[ "$box" =~ ^$github_regex$ ]]; then
@@ -34,14 +34,13 @@ box_info() {
     info_type="path"
     info_path="$box"
     info_vers="$(tar c $box 2>/dev/null | azk.hash)"
-    info_image="$info_path:$info_vers"
+    info_image="${info_path#/}:$info_vers"
 
   # Docker image
   elif [[ "$box" =~ ^$docker_regex$ ]]; then
     info_type="docker"
-    info_vers="$(expr "$box" : 'docker:[[:alnum:]|\.|/|-|_]*:\(.*\)')"
-    info_vers="${info_vers:-latest}"
-    info_image="$(expr "$box" : 'docker:\(.*\)')"
+    info_vers="$(expr "$box" : '.*:\(.*\)')"
+    info_image="$box"
   fi
 
   str_or_null() {

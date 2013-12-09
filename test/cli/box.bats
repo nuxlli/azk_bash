@@ -39,7 +39,7 @@ setup() {
   type="path"
   path="${AZK_TEST_DIR}"
   version="$(tar c $path | azk.hash)"
-  image="$path:$version"
+  image="${path#/}:$version"
 
   run azk-box info $path
   assert_success
@@ -74,7 +74,7 @@ setup() {
 }
 
 @test "$test_label support docker image format" {
-  run azk-box info docker:ubuntu:12.04
+  run azk-box info ubuntu:12.04
   echo "$output"
   assert_success
 
@@ -84,10 +84,11 @@ setup() {
   assert_equal "12.04" $(echo $output | jq -r ".version")
   assert_equal "ubuntu:12.04" $(echo $output | jq -r ".image")
 
-  run azk-box info docker:azk/ima-g_e
+  run azk-box info azk/ima-g_e:latest
+  echo "$output"
   assert_success
 
-  assert_equal "azk/ima-g_e" $(echo $output | jq -r ".image")
+  assert_equal "azk/ima-g_e:latest" $(echo $output | jq -r ".image")
   assert_equal "latest" $(echo $output | jq -r ".version")
 }
 
