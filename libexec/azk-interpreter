@@ -7,6 +7,7 @@
 set -e
 [ -n "$AZK_DEBUG" ] && set -x
 
+# Show usage helper
 show_usage() {
   azk-help --usage $1 >&2
   exit 1
@@ -29,11 +30,9 @@ source "$(azk-root)/private/bin/common.sh"
 azk.run_internal() {
   local command="$1"; shift
   type "${azk_command}_${command}" &>/dev/null && \
-    eval "${azk_command}_${command} $@" ||
-    {
+    eval "${azk_command}_${command} $@" || {
       [ ! -z "$command" ] && azk.error "'$command' unsupported command"
-      azk-help --usage "$azk_command" >&2
-      exit 1;
+      show_usage "$azk_command"
     }
 }
 

@@ -1,13 +1,15 @@
-#!/usr/bin/env bash
+#!/usr/bin/env azk-interpreter
 # Summary: Show azk-agent status informations
 # Usage: azk agent-status
 
-set -e
-[ -n "$AZK_DEBUG" ] && set -x
-
 # run only is --final flag
 if [ ! "$1" = "--final" ]; then
-  exec azk-agent-exec agent-status "$@"
+  azk-agent-exec $azk_command "$@" | jq "."
+  exit 0
 fi
 
-echo "Agent is running..."
+echo "{
+  \"agent_ip\": \"`azk.agent_ip`\",
+  \"uptime\": \"`uptime`\",
+  \"os_version\": \"$(expr "$(grep PRETTY_NAME /etc/os-release)" : '.*="\(.*\)"')\"
+}"
