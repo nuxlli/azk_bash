@@ -1,27 +1,19 @@
-#!/usr/bin/env bash
+#!/usr/bin/env azk-interpreter
 #
 # Summary: Run an command it has as dependence the agent
 #
 # Usage: azk agent-exec <azk-command> [arg1 arg2...]
-
-set -e
-[ -n "$AZK_DEBUG" ] && set -x
 
 # Provide azk completions
 if [ "$1" = "--complete" ]; then
   exec azk-commands
 fi
 
-if [ "$1" = "--final" ]; then
-  final=true; shift
-fi
+# Is final command?
+[ "$1" == "--final" ] && { final=true; shift; }
 
-azk_command="$1"
-
-if [ -z "$azk_command" ]; then
-  azk-help --usage agent-exec >&2
-  exit 1
-fi
+# Require options
+[ -z "$1" ] && { show_usage $azk_command; }
 
 check_agent() {
   local SAVE_AZK_INTERACTIVE="${AZK_INTERACTIVE}"
@@ -33,25 +25,6 @@ check_agent() {
   export AZK_INTERACTIVE="$SAVE_AZK_INTERACTIVE"
   return 1
 }
-
-escape_path () {
-  echo $(echo $@ | sed 's/\//\\\//g')
-}
-
-resolve_app_agent_dir () {
-  local base="${AZK_AGENT_APPS_PATH:-/home/core/azk/data/apps}"
-
-  # Valid subdirectory
-  local path="$(pwd | sed 's/'"$(escape_path $AZK_APPS_PATH)"'//g')"
-  [[ "$path" != "$(pwd)" ]] && echo $base$path && return 0
-
-  # Not valid app path
-  azk.error "not in azk applications path"
-  return 1
-}
-
-# Tools
-source "$(azk-root)/private/bin/common.sh"
 
 # find docker command
 case `type -t docker` in
@@ -76,7 +49,7 @@ case `type -t docker` in
     envs=$(printf ' %s;' "${envs[@]}")
 
     # Run command in agent
-    app_path=`resolve_app_agent_dir`
+    app_path=`azk.resolve_app_agent_dir`
     command=$1; shift
 
     azk_path="/home/core/azk/libexec/azk"

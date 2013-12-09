@@ -153,3 +153,21 @@ azk.agent_ip() {
 azk.hash() {
   { sha1sum 2>/dev/null || shasum; } | awk '{print $1}'
 }
+
+azk.escape_path() {
+  echo $(echo $@ | sed 's/\//\\\//g')
+}
+
+# TODO: Check this is test in linux
+azk.resolve_app_agent_dir() {
+  local actual="${1:-`pwd`}"
+  local base="${AZK_AGENT_APPS_PATH:-/home/core/azk/data/apps}"
+
+  # Valid subdirectory
+  local path="$(echo $actual| sed 's/'"$(azk.escape_path $AZK_APPS_PATH)"'//g')"
+  [[ "$path" != "$actual" ]] && echo $base$path && return 0
+
+  # Not valid app path
+  azk.error "not in azk applications path"
+  return 1
+}

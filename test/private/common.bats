@@ -128,3 +128,9 @@ source `azk root`/private/bin/common.sh
   run eval "echo 'foobar' | azk.hash"
   assert_success "sha1sum"
 }
+
+@test "$test_label escape path" {
+  run azk.escape_path "/home/core"
+  assert_success '\/home\/core'
+}
+
