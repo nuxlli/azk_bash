@@ -1,0 +1,50 @@
+#!/usr/bin/env azk-interpreter
+#
+# Summary: Check and provision image from a box definition in azkfile
+#
+# Usage: azk image-provision <azkfile>
+
+# Require agent
+if [ ! "$1" == "--final" ]; then
+  exec azk-agent-exec $azk_command "$@"
+fi; shift
+
+# Require azkfile
+[ -z "$1" ] && azkfile=`azk-azkfile`
+
+# Data
+# TODO: Add support to array of box
+box=$(cat $azkfile | jq -r ".box")
+
+# Box is required
+if [ "$box" == "null" ]; then
+  azk.error "'$azkfile' not have a box entry (required)."
+  exit 1;
+fi
+
+box_meta() {
+  echo $box_data | jq -r ".$1"
+}
+
+docker_provision() {
+  docker pull $image
+}
+
+# Box data
+box_data="$(azk-box info $box)"
+azk.info "Type box detected: $(box_meta type)"
+
+# Image check and provision
+image="$(box_meta image)"
+
+# Search image in docker
+azk.info "searching docker image: '$image'"
+img_id="$(azk-dcli /images/$image/json {} | jq -r '.id')"
+
+# If not exist image, make
+if [ "$img_id" == "null" ]; then
+  eval "$(box_meta type)_provision $@"
+fi
+
+# Success? Print image name
+echo "$image"
