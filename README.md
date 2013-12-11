@@ -48,7 +48,7 @@ The entire process of provisioning and configuring the environment in which the 
 
 ### Basic GitHub Checkout
 
-1. Check out ask into ~/.azk.
+1. Check out ask into `~/.azk`.
 
   ```bash
   $ git clone https://github.com/azukiapp/azk.git ~/.azk
@@ -62,15 +62,15 @@ The entire process of provisioning and configuring the environment in which the 
   $ echo '192.168.115.4 azk-agent` | sudo tee -a /etc/hosts 
   ```
 
-3. Add ~/.azk/bin to your $PATH for access to the ask command-line utility.
+3. Add `~/.azk/bin` to your $PATH for access to the ask command-line utility.
 
   ```bash
   $ echo 'export PATH="$HOME/.azk/bin:$PATH"' >> ~/.bash_profile
   ```
 
-  **Ubuntu Desktop note**: Modify your ~/.bashrc instead of ~/.bash_profile.
+  **Ubuntu Desktop note**: Modify your `~/.bashrc` instead of `~/.bash_profile`.
 
-  **Zsh note**: Modify your ~/.zshrc file instead of ~/.bash_profile.
+  **Zsh note**: Modify your `~/.zshrc` file instead of `~/.bash_profile`.
 
 4. Add azk init to your shell to enable autocompletion.
 
@@ -78,7 +78,7 @@ The entire process of provisioning and configuring the environment in which the 
   $ echo 'eval "$(azk sh-init -)"' >> ~/.bash_profile
   ```
 
-  Same as in previous step, use ~/.bashrc on Ubuntu, or ~/.zshrc for Zsh.
+  Same as in previous step, use `~/.bashrc` on Ubuntu, or `~/.zshrc` for Zsh.
 
 5. Restart your shell so that PATH changes take effect. (Opening a new terminal tab will usually do it.) Now check if ask was set up:
 
