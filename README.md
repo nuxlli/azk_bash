@@ -50,48 +50,48 @@ The entire process of provisioning and configuring the environment in which the 
 
 1. Check out ask into ~/.azk.
 
-```bash
-$ git clone https://github.com/azukiapp/azk.git ~/.azk
-```
+  ```bash
+  $ git clone https://github.com/azukiapp/azk.git ~/.azk
+  ```
 
 2. Configure azk-agent IP address
 
-In order to give `azk` access to `azk agent`, it is necessary to define an IP address to the virtual machine. This IP address will be used to establish a private network between the physical machine running `azk` and the virtual machine where `azk agent` is in execution. 
+  In order to give `azk` access to `azk agent`, it is necessary to define an IP address to the virtual machine. This IP address will be used to establish a private network between the physical machine running `azk` and the virtual machine where `azk agent` is in execution. 
 
-```bash
-$ echo '192.168.115.4 azk-agent` | sudo tee -a /etc/hosts 
-```
+  ```bash
+  $ echo '192.168.115.4 azk-agent` | sudo tee -a /etc/hosts 
+  ```
 
 3. Add ~/.azk/bin to your $PATH for access to the ask command-line utility.
 
-```bash
-$ echo 'export PATH="$HOME/.azk/bin:$PATH"' >> ~/.bash_profile
-```
+  ```bash
+  $ echo 'export PATH="$HOME/.azk/bin:$PATH"' >> ~/.bash_profile
+  ```
 
-**Ubuntu Desktop note**: Modify your ~/.bashrc instead of ~/.bash_profile.
+  **Ubuntu Desktop note**: Modify your ~/.bashrc instead of ~/.bash_profile.
 
-**Zsh note**: Modify your ~/.zshrc file instead of ~/.bash_profile.
+  **Zsh note**: Modify your ~/.zshrc file instead of ~/.bash_profile.
 
 4. Add azk init to your shell to enable autocompletion.
 
-```bash
-$ echo 'eval "$(azk sh-init -)"' >> ~/.bash_profile
-```
+  ```bash
+  $ echo 'eval "$(azk sh-init -)"' >> ~/.bash_profile
+  ```
 
-Same as in previous step, use ~/.bashrc on Ubuntu, or ~/.zshrc for Zsh.
+  Same as in previous step, use ~/.bashrc on Ubuntu, or ~/.zshrc for Zsh.
 
 5. Restart your shell so that PATH changes take effect. (Opening a new terminal tab will usually do it.) Now check if ask was set up:
 
-```bash
-$ type azk
-#=> "azk is a function"
-```
+  ```bash
+  $ type azk
+  #=> "azk is a function"
+  ```
 
-6. enjoy
+6. Enjoy
 
-```bash
-$ azk help
-```
+  ```bash
+  $ azk help
+  ```
 
 ## Usage/Features
 
