@@ -25,6 +25,7 @@ echo "{
   \"id\": $(str_or_null $(meta id)),
   \"box\": $(str_or_null $(meta box)),
   \"path\": $(str_or_null $root_path),
+  \"image\": $(str_or_null "azk/apps/$(meta id)"),
   \"azkfile\": $(str_or_null $azkfile),
   \"agent_path\": $(str_or_null $agent_path)
 }"

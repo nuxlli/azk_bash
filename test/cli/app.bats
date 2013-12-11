@@ -21,6 +21,7 @@ setup() {
   agent_path="$(azk.resolve_app_agent_dir $path)"
 
   assert_equal "def73023f3b54e5"           $(echo $output | jq -r ".id")
+  assert_equal "azk/apps/def73023f3b54e5"  $(echo $output | jq -r ".image")
   assert_equal "azukiapp/test-box#v0.0.1"  $(echo $output | jq -r ".box")
   assert_equal "$path"       $(echo $output | jq -r ".path")
   assert_equal "$azkfile"    $(echo $output | jq -r ".azkfile")
