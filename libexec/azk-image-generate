@@ -1,23 +1,33 @@
-#!/usr/bin/env bash
+#!/usr/bin/env azk-interpreter
 #
 # Summary: Performs the provisioning of specified image type
 #
-# Usage: azk image-generate <image-type> <script-path> <tag>
+# Usage: azk image-generate <script-path> <tag>
 
-set -e
-[ -n "$AZK_DEBUG" ] && set -x
+# Require agent
+[ "$1" == "--final" ] && {
+  final=true; shift
+}
 
-read -r type path tag <<<"$@"
-
-# requires parameter
-if [ -z "$type" -o -z "$path" -o -z "$tag" ]; then
-  azk-help --usage image-generate >&2
-  exit 1
-fi
+[ -z "$2" ] && {
+  path=`pwd`; tag="$1"
+} || {
+  path="$1"; tag="$2"
+}
 
 # requires azkfile
 cd $path; export AZK_DIR=$path
-azkfile=`azk-azkfile`
+
+# requires parameter
+[ -z "$tag" ] && {
+  tag=`azk-app info | jq -r ".image"`
+}
+
+if [ -z "$final" ]; then
+  exec azk-agent-exec $azk_command $tag
+fi
+
+azkfile=`azk-azkfile --no-loop`
 
 meta() {
   local var="$1"; shift
@@ -33,15 +43,13 @@ meta() {
 declare -a dockerfile
 
 # Box based
-if [ "$1" = "app" ]; then
-  from=$(azk-provision --get-name box)
-else
-  meta from ".box"
-fi
+meta from ".box"
+azk.info "Check for box $from"
+{ image=`azk-image-provision $from 2>&3`; } 3>&2
 
-dockerfile+=("FROM $from")
+dockerfile+=("FROM $image")
 
-meta -a build_steps ".build"
+meta -a build_steps ".build // []"
 for step in "${build_steps[@]}"; do
   if [[ "${step}" =~ ^#.* ]]; then
     dockerfile+=("RUN echo '$step' \$'\n'")
