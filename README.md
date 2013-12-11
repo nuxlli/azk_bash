@@ -1,49 +1,49 @@
 # Azk
 
-ask is a tool to developers it assists in creation, maintenance and isolation
-of the environments of development. Through the installation of some components
-(cli and agent), you will be able easily to create isolated environments to many
-projects and stack of languages.
+`azk` is a tool that assists web developers in the creation, maintenance and isolation
+of development environments. Through the installation of some components
+(`cli` and `agent`), you will be able to easily create isolated environments to many
+projects using several different stacks.
 
-**Features** : provision, monitoring, builtin load balancer, automatic startup script, logging...
+**Features** : provisioning, monitoring, built-in load balancer, automatic start-up script, logging and more.
 
 ## How It Works
 
-Em alto nível, o azk é uma ferramenta de linha de comando, que com base em um arquivo configuração, o `azkfile.json`, determinar quais os passos necessários para construção (instalação e configuração) do ambiente para executar e/ou compilar uma determina aplicação.
+At the high level, `azk` is a command line tool that uses a given configuration file (`azkfile,jason`) to define the necessary steps to build (installation and configuration) the proper environment to executing and/or compiling a given application.
 
-Além disso ele conta com uma série de comandos que permitem executar estas tarefas e controlar a execução de serviços relacionados a aplicação, como banco de dados e filas.
+Besides, it features several commands that allow for executing these tasks and controlling the execution of services related to the application, such as databases and queues. 
 
-No baixo nível, o azk é um ferramenta que tira proveito de um sistema de containers para Linux, o [docker](http://docker.io) para criar ambientes isolados para execução de cada parte de uma aplicação.
+At the low level, `azk` is a tool that leverages a container system for Linux called [Docker](http://docker.io) in order to create isolated environments for executing all the different parts of an application. 
 
-Ele faz isto através de chamadas a api do docker, dessa forma azk é capaz de provisionar imagens e controlar a execução de serviços com base nessas imagens. Além de tarefas mais gerais como: balancear chamadas http para as instâncias de uma aplicação, armazenar logs de execução e uso de recursos e outras tarefas gerais que tenham a ver com ciclo de vida do desenvolvimento de uma aplicação. 
+`azk` is able to perform these jobs through calls to the Docker API. That way, `azk` is capable of provisioning images as well as of controlling the execution of services based on these images. Beyond that, `azk` is also capable of broader tasks such as: balancing HTTP calls to instances of an application, storing execution and resources usage logs and other general tasks related to the lifecycle management of an application since its development.
 
-### Entendendo o cli
+### Understanding the CLI
 
-Para a maior parte das tarefas o comando `azk` primariamente tenta determinar se a pasta corrente é uma `azk app`, para isso ele verifica a existência do arquivo `azkfile.json` na árvore de diretórios da aplicação.
+For most tasks, the `azk` command first tries to ascertain if the current folder corresponds to an `azk app`. To do that, it verifies the presence of the `azkfile.json` file in the application's directory tree. 
 
-Uma vez determinada a validade da `azk app` é hora de buscar pelo `azk-agent` que será o responsável por executar o comando em um ambiente isolado da máquina principipal.
+Once the `azk app` is deemed valid, the `azk` command searches for `azk agent`, which will be responsible for executing the `azk command` in an environment that's isolated from the main machine. 
 
-### Entendendo o azk-agent
+### Understanding azk-agent
 
-O `azk-agent` pode ser entendi como o serviço responsável pela execução dos comandos do `azk` em um ambiente isolado através do uso do sistema de containers. No fundo o azk-agent é uma máquina virtual rodando o [coreos](http://coreos.com) sobre o virtualbox (vmware esta programando).
+`azk agent` can be described as the service responsible for executing `azk` commands in an isolated environment by making use of the containers system. At its deepest level, `azk agent` is a virtual machine running [coreOS](http://coreos.com) over VirtualBox (support to VMware is in the roadmap).
 
-### Entendendo o mapeamento de disco 
+### Understanding disk mapping
 
-Como o azk-agent roda sobre uma máquina virtual é preciso fazer um compartilhamento de disco da maquina host com a máquina virtual do azk-agent.
+Since `azk agent` runs over a virtual machine, it is necessary to share the host machine's disk with that virtual machine.
 
-Para evitar que para cada `azk app` seja feito um novo compartilhamento e montagem, o azk usa uma estratégia onde na sua instalação é definido uma pasta base onde todos as aplicações que você deseja desenvolver com azk devem estar, dai em diante ele cuida do processo de `resolver` o endereço desta pasta dentro da máquina virtual.
+In order to avoid that new portions of the disk be separated and mounted for each `azk app`, `azk` creates a folder during its own installation in which all applications developed with `azk` must be placed. From then on, it takes care by itself of the process to `resolve` this folder's address within the virtual machine.
 
-Para customizar essa pasta basta definir a variável de ambiente `AZK_APPS_PATH` antes de executar o processo de instalação do azk.
+For customizing this folder, the environment variable `AZK_APPS_PATH` must be defined before the `azk` installation process is started.
 
 ## Installation
 
-Todo o processo de provisionamento e configuração do ambiente para execução das aplicações se dá dentro de uma máquina virtual. Atualmente essa máquina virtual é administrada pelo aplicativo [Vagrant](http://www.vagrantup.com), que é requisito para uso do azk.
+The entire process of provisioning and configuring the environment in which the applications will be executed happens within a virtual machine. Currently, this virtual machine is managed by the application [Vagrant](http://www.vagrantup.com), which is therefore a requisite for using `azk`.
 
 ### Requirements
 
 * Linux or Mac OS X (Windows: planned)
 * [Vagrant](http://www.vagrantup.com)
-* Internet connection (provision process)
+* Internet connection (for the provisioning process)
 * git
 
 ### Basic GitHub Checkout
@@ -54,9 +54,9 @@ Todo o processo de provisionamento e configuração do ambiente para execução 
 $ git clone https://github.com/azukiapp/azk.git ~/.azk
 ```
 
-2. Configure azk-agent ip
+2. Configure azk-agent IP address
 
-Para que o azk tenha acesso ao `azk-agent` é necessário definir um ip para máquina virtual, este ip sera usado para estabelecer uma rede privada entre a máquina onde o azk esta instalado o a máquina virtual onde o `azk-agent` é executado.
+In order to give `azk` access to `azk agent`, it is necessary to define an IP address to the virtual machine. This IP address will be used to establish a private network between the physical machine running `azk` and the virtual machine where `azk agent` is in execution. 
 
 ```bash
 $ echo '192.168.115.4 azk-agent` | sudo tee -a /etc/hosts 
