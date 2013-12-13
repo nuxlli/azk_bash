@@ -1,7 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/bin/env azk-interpreter
 # Summary: Search azk file in current project
-set -e
-[ -n "$AZK_DEBUG" ] && set -x
+
+# TODO: adding --output to improve performance
+[ "$1" == "--no-loop" ] && noloop=true
 
 find_local_file() {
   local root="$1"
@@ -10,6 +11,7 @@ find_local_file() {
       echo "${root}/azkfile.json"
       exit
     fi
+    [ ! -z "$noloop" ] && break;
     root="${root%/*}"
   done
 }
@@ -19,11 +21,8 @@ file=$(
   [ "$AZK_DIR" = "$PWD" ] || find_local_file "$PWD"
 )
 
-# Tools
-source "$(azk-root)/private/bin/common.sh"
-
 if [ -z "$file" ]; then
-  azk.error "no such '%{yellow}azkfile.json%{reset}' in current project"
+  azk.error "no such '%{yellow}${file:-azkfile.json}%{reset}' in current project"
   exit 1
 else
   # Valid azk file

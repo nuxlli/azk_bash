@@ -1,0 +1,54 @@
+#!/usr/bin/env azk-interpreter
+#
+# Summary: Check and provision image from a box definition
+#
+# Usage: azk image-provision <box>
+
+# Require agent
+if [ ! "$1" == "--final" ]; then
+  exec azk-agent-exec $azk_command "$@"
+fi; shift
+
+# Box
+[ -z "$1" ] && show_usage $azk_command
+
+box_meta() {
+  echo $box_data | jq -r ".$1"
+}
+
+docker_provision() {
+  docker pull $image
+}
+
+path_provision() {
+  azk-image-generate "$(box_meta clone_path)" "$image"
+}
+
+github_provision() {
+  # Get github repository
+  #azk-image-generate "$(box_meta clone_path)" "$image"
+  echo "github_provision"
+}
+
+# Box data
+box_data="$(azk-box info $1)"
+azk.info "Type box detected: $(box_meta type)"
+
+# Image check and provision
+image="$(box_meta image)"
+
+# Search image in docker
+azk.info "Searching docker image: '$image'"
+img_id="$(azk-dcli /images/$image/json {} | jq -r '.id')"
+
+# If not exist image, make
+if [ "$img_id" == "null" ]; then
+  azk.info "'$image' not found, provision it..."
+  eval "$(box_meta type)_provision $@"
+  azk.info "'$image' provisioned'"
+else
+  azk.info "'$image' found, image id: ${img_id}"
+fi
+
+# Success? Print image name
+echo "$image"

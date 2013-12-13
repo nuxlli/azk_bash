@@ -8,7 +8,7 @@ setup() {
 }
 
 @test "$test_label does not exist $AZK_FILE_NAME" {
-  run azk azkfile
+  run azk azkfile --no-loop
   assert_failure
   assert_output "azk: no such '${AZK_FILE_NAME}' in current project"
 }
@@ -47,7 +47,7 @@ setup() {
   mkdir -p "widget/blank"
   create_file "project/${AZK_FILE_NAME}"
   cd project
-  AZK_DIR="${AZK_TEST_DIR}/widget/blank" run azk-azkfile
+  AZK_DIR="${AZK_TEST_DIR}/widget/blank" run azk-azkfile --no-loop
   assert_success "${AZK_TEST_DIR}/project/${AZK_FILE_NAME}"
 }
 
@@ -61,6 +61,15 @@ setup() {
   echo "{}" > azkfile.json
   run azk-azkfile
   assert_success "${AZK_TEST_DIR}/${AZK_FILE_NAME}"
+}
+
+@test "$test_label no-loop option" {
+  mkdir ./project
+  cd ./project
+
+  run azk-azkfile --no-loop
+  assert_failure
+  assert_match "no such '${AZK_FILE_NAME}'" "$output"
 }
 
 @test "$test_label clear comments in valid json file" {

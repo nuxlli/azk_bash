@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
 # Summary: Display the azk root directory
 
- __FILE__="${BASH_SOURCE}"
-_DEFAULT_PATH=${_AZK_PATH:-`cd \`dirname $(readlink ${__FILE__} || echo ${__FILE__} )\`/..; pwd`}
+BASH_SOURCE="${BASH_SOURCE:-$0}"
 
-echo ${AZK_ROOT:-$_DEFAULT_PATH}
+__FOLDER__="$(dirname $BASH_SOURCE)"
+__TARGET__=$(dirname `readlink $BASH_SOURCE` 2>/dev/null || echo "")
+
+if [ ! -z "$__TARGET__" ]; then
+  if [[ "$__TARGET__" =~ ^/.*$ ]]; then
+    __FOLDER__="$__TARGET__"
+  else
+    __FOLDER__="${__FOLDER__}/${__TARGET__}"
+  fi
+fi
+
+echo "${AZK_ROOT:-$(cd ${__FOLDER__}/..; pwd)}"

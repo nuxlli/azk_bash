@@ -14,7 +14,7 @@ set -e
 
 version="0.1.0"
 
-if cd "$AZK_ROOT" 2>/dev/null; then
+if cd "$(azk-root)" 2>/dev/null; then
   git_revision="$(git describe --tags HEAD 2>/dev/null || true)"
   git_revision="${git_revision#v}"
 fi

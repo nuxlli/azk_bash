@@ -78,6 +78,8 @@ source `azk root`/private/bin/common.sh
 }
 
 @test "$test_label get a agent_id" {
+  export SSH_CONNECTION=""
+
   ping() {
     if [[ "$@" =~ ^-q\ -c\ 1\ -t\ 1\ (azk-agent|agent)$ ]]; then
       echo "PING azk-agent (172.16.0.4): 56 bytes"
@@ -103,3 +105,32 @@ source `azk root`/private/bin/common.sh
   run azk.agent_ip
   assert_success "10.0.0.2"
 }
+
+@test "$test_label calculate a hash" {
+  sha1sum() {
+    echo "Error" >&2
+    return 1
+  }
+
+  shasum() {
+    echo "shasum -";
+  }
+
+  run eval "echo 'foobar' | azk.hash"
+  echo $output
+  assert_success "shasum"
+
+  sha1sum() {
+    echo "sha1sum -"
+  }
+
+  export -f sha1sum
+  run eval "echo 'foobar' | azk.hash"
+  assert_success "sha1sum"
+}
+
+@test "$test_label escape path" {
+  run azk.escape_path "/home/core"
+  assert_success '\/home\/core'
+}
+

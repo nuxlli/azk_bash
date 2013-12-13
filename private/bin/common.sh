@@ -1,5 +1,23 @@
 #!/usr/bin/env bash
 
+azk.resolve_link() {
+  readlink "$1"
+}
+
+azk.abs_dirname() {
+  local cwd="$(pwd)"
+  local path="$1"
+
+  while [ -n "$path" ]; do
+    cd "${path%/*}"
+    local name="${path##*/}"
+    path="$(azk.resolve_link "$name" || true)"
+  done
+
+  pwd
+  cd "$cwd"
+}
+
 # TODO: Refectory to use a common functions
 azk.debug.color() {
   case "${1}" in
@@ -75,7 +93,7 @@ azk.uuid() {
 
 azk.redis() {
     ip=`azk.agent_ip`
-  port=49157
+  port=49153
   exec 6<>/dev/tcp/$ip/$port
   if [ $? -ne 0 ]; then
     azk.error "[redis] dont connect to redis"
@@ -130,4 +148,26 @@ azk.agent_ip() {
 
   azk.error "azk-agent not found"
   return 1;
+}
+
+azk.hash() {
+  { sha1sum 2>/dev/null || shasum; } | awk '{print $1}'
+}
+
+azk.escape_path() {
+  echo $(echo $@ | sed 's/\//\\\//g')
+}
+
+# TODO: Check this is test in linux
+azk.resolve_app_agent_dir() {
+  local actual="${1:-`pwd`}"
+  local base="${AZK_AGENT_APPS_PATH:-/home/core/azk/data/apps}"
+
+  # Valid subdirectory
+  local path="$(echo $actual| sed 's/'"$(azk.escape_path $AZK_APPS_PATH)"'//g')"
+  [[ "$path" != "$actual" ]] && echo $base$path && return 0
+
+  # Not valid app path
+  azk.error "not in azk applications path"
+  return 1
 }

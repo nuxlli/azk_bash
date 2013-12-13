@@ -20,18 +20,6 @@ load ../test_helper
   assert [ "${lines[0]}" = "azk 0.1.0" ]
 }
 
-@test "$test_label default AZK_ROOT" {
-  AZK_ROOT="" run azk root
-  assert_success
-  assert_output "$_AZK_PATH"
-}
-
-@test "$test_label inherited AZK_ROOT" {
-  AZK_ROOT=/opt/azk run azk root
-  assert_success
-  assert_output "/opt/azk"
-}
-
 @test "$test_label default AZK_DIR" {
   run azk echo AZK_DIR
   assert_output "$(pwd)"
